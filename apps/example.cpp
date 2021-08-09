@@ -3,24 +3,21 @@
 #include <random>
 
 using namespace LDPC;
-
-std::random_device rd;
-std::mt19937 gen(rd());
-std::uniform_real_distribution<double> dist(0.0, 1.0);
+static Uniform uniform;
 
 void channel(std::vector<int>& _message, std::vector<int>& _syndrome, float _pError) {
   for (auto& var : _message)
-    if (dist(gen) < _pError)
+    if (uniform() < _pError)
       var = (var == 0) ? 1 : 0;
 
   for (auto& var : _syndrome)
-    if (dist(gen) < _pError)
+    if (uniform() < _pError)
       var = (var == 0) ? 1 : 0;
 }
 
 int main(int argc, char const* argv[]) {
-  const int n = 10;
-  const int k = 7;
+  const int n = 30;
+  const int k = 21;
   std::vector<int> messageInput(k);
   std::vector<int> syndromeInput(n - k);
   std::vector<int> messageChannel(k);
@@ -29,7 +26,7 @@ int main(int argc, char const* argv[]) {
   std::vector<int> syndromeOutput(n - k);
 
   for (auto& var : messageInput)
-    var = (dist(gen) < 0.7) ? 0 : 1;
+    var = (uniform() < 0.7) ? 0 : 1;
 
   Gallager ldpc(n, k);
   syndromeInput   = ldpc.getSyndrome(messageInput);
