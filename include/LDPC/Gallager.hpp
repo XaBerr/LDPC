@@ -22,6 +22,7 @@ class Gallager {
   // const std::vector<int> &encode(const std::vector<int> &_message);
   const std::vector<int> &getSyndrome(const std::vector<int> &_message);
   const std::vector<int> &decode(const std::vector<int> &_message, const std::vector<int> &_syndrome);
+  const std::vector<std::vector<int>> &getH() { return H; }
 };
 }  // namespace LDPC
 

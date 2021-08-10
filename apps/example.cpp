@@ -35,7 +35,15 @@ int main(int argc, char const* argv[]) {
   channel(messageChannel, syndromeChannel, 0.1);
   messageOutput = ldpc.decode(messageChannel, syndromeChannel);
 
-  std::cout << "Message input: ";
+  auto H = ldpc.getH();
+  std::cout << "\nH matrix: " << H.size() << " " << H[5].size() << std::endl;
+  for (auto row : H) {
+    for (auto col : row)
+      std::cout << col;
+    std::cout << std::endl;
+  }
+
+  std::cout << "\nMessage input: ";
   for (auto var : messageInput)
     std::cout << var;
 

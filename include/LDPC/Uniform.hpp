@@ -6,13 +6,13 @@
 
 namespace LDPC {
 class Uniform {
- private:
-  std::mt19937 mt;
-  std::uniform_real_distribution<double> dist;
+  std::mt19937 generator;
+  std::uniform_real_distribution<double> distribution;
 
  public:
-  Uniform(double lower = 0.0, double upper = 1.0) : mt(std::time(nullptr)), dist(lower, upper) {}
-  double operator()() { return dist(mt); }
+  Uniform(double _lower = 0.0, double _upper = 1.0) : generator(std::time(nullptr)), distribution(_lower, _upper) {}
+  std::mt19937& getGenerator() { return generator; }
+  double operator()() { return distribution(generator); }
 };
 }  // namespace LDPC
 

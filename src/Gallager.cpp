@@ -1,6 +1,8 @@
 #include <LDPC/Gallager.hpp>
 #include <LDPC/Uniform.hpp>
 #include <stdexcept>
+#include <algorithm>
+#include <iostream>
 
 using namespace LDPC;
 static Uniform uniform;
@@ -8,18 +10,29 @@ static Uniform uniform;
 Gallager::Gallager(int _n, int _k)
     : n{validateN(_n, _k)},
       k{validateK(_n, _k)},
-      rows{_k},
-      columns{_n - _k},
-      H(rows, std::vector<int>(columns, 0)),
+      rows{_n - _k},
+      columns{_k},
+      H(rows, std::vector<int>(columns)),
       message{_n - _k, 0},
       syndrome{_k, 0},
       codeword{_n, 0} {
-  // first band
-  int m = _n - _k;
+  std::vector<int> shuffle1(columns);
+  std::vector<int> shuffle2(columns);
+  for (int i = 0; i < columns; ++i) {
+    shuffle1[i] = i;
+    shuffle2[i] = i;
+  }
+  std::shuffle(shuffle1.begin(), shuffle1.end(), uniform.getGenerator());
+  std::shuffle(shuffle2.begin(), shuffle2.end(), uniform.getGenerator());
   for (size_t i = 0; i < rows / 3; i++)
-    for (size_t j = 0; j < 3 * columns / m; j++)
-      H[i][j + i * 3 * columns / m] = 1;
-  // second band
+    for (size_t j = 0; j < 3 * columns / rows; j++) {
+      // first band
+      H[i][j + i * 3 * columns / rows] = 1;
+      // second band
+      H[i + 1 * rows / 3][shuffle1[j + i * 3 * columns / rows]] = 1;
+      // third band
+      H[i + 2 * rows / 3][shuffle2[j + i * 3 * columns / rows]] = 1;
+    }
 }
 
 int Gallager::validateN(int _n, int _k) {
