@@ -16,8 +16,8 @@ void channel(std::vector<int>& _message, std::vector<int>& _syndrome, float _pEr
 }
 
 int main(int argc, char const* argv[]) {
-  const int n = 30;
-  const int k = 21;
+  const int n = 30 * 2;
+  const int k = 21 * 2;
   const int m = n - k;
   std::vector<int> messageInput(k);
   std::vector<int> syndromeInput(m);
@@ -33,8 +33,9 @@ int main(int argc, char const* argv[]) {
   syndromeInput   = ldpc.getSyndrome(messageInput);
   messageChannel  = messageInput;
   syndromeChannel = syndromeInput;
-  channel(messageChannel, syndromeChannel, 0.1);
-  messageOutput = ldpc.decode(messageChannel, syndromeChannel);
+  channel(messageChannel, syndromeChannel, 0.05);
+  messageOutput  = ldpc.decoderBitFlip(messageChannel, syndromeChannel);
+  syndromeOutput = ldpc.getSyndrome(messageOutput);
 
   auto H = ldpc.getH();
   std::cout << "\nH matrix: " << H.size() << " " << H[5].size() << std::endl;

@@ -65,6 +65,47 @@ const std::vector<int> &Gallager::getSyndrome(const std::vector<int> &_message) 
   return syndrome;
 }
 
-const std::vector<int> &Gallager::decode(const std::vector<int> &_message, const std::vector<int> &_syndrome) {
+std::vector<int> Gallager::decoderBitFlip(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations) {
+  std::vector<int> errorMessage(columns);
+  std::vector<int> errorSyndrome(rows);
+  std::vector<int> newSyndrome(_syndrome);
+  bool success;
+  int i, j, maxPositionMessage, maxPositionSyndrome;
+  while (0 < _maxNumberOfIterations--) {
+    newSyndrome = getSyndrome(_message);
+    success     = true;
+    for (i = 0; i < rows; i++)
+      if (newSyndrome[i] ^ _syndrome[i]) {
+        success = false;
+        for (j = 0; j < columns; j++)
+          errorMessage[j] += H[i][j];
+        errorSyndrome[i]++;
+      }
+    if (success)
+      return _message;
+
+    maxPositionMessage = 0;
+    for (i = 0; i < columns; i++) {
+      if (errorMessage[i] > errorMessage[maxPositionMessage])
+        maxPositionMessage = i;
+      else
+        errorMessage[i] = 0;
+    }
+
+    maxPositionSyndrome = 0;
+    for (i = 0; i < rows; i++) {
+      if (errorSyndrome[i] > errorSyndrome[maxPositionSyndrome])
+        maxPositionSyndrome = i;
+      else
+        errorSyndrome[i] = 0;
+    }
+    if (errorSyndrome[maxPositionSyndrome] > errorMessage[maxPositionMessage])
+      _syndrome[maxPositionSyndrome] = _syndrome[maxPositionSyndrome] ? 0 : 1;
+    else
+      _message[maxPositionMessage] = _message[maxPositionMessage] ? 0 : 1;
+
+    errorSyndrome[maxPositionSyndrome] = 0;
+    errorMessage[maxPositionMessage]   = 0;
+  }
   return _message;
 }
