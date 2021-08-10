@@ -18,12 +18,13 @@ void channel(std::vector<int>& _message, std::vector<int>& _syndrome, float _pEr
 int main(int argc, char const* argv[]) {
   const int n = 30;
   const int k = 21;
+  const int m = n - k;
   std::vector<int> messageInput(k);
-  std::vector<int> syndromeInput(n - k);
+  std::vector<int> syndromeInput(m);
   std::vector<int> messageChannel(k);
-  std::vector<int> syndromeChannel(n - k);
+  std::vector<int> syndromeChannel(m);
   std::vector<int> messageOutput(k);
-  std::vector<int> syndromeOutput(n - k);
+  std::vector<int> syndromeOutput(m);
 
   for (auto& var : messageInput)
     var = (uniform() < 0.7) ? 0 : 1;
@@ -43,11 +44,24 @@ int main(int argc, char const* argv[]) {
     std::cout << std::endl;
   }
 
-  std::cout << "\nMessage input: ";
+  std::cout << "\nEncoder: ";
   for (auto var : messageInput)
     std::cout << var;
+  std::cout << " | ";
+  for (auto var : syndromeInput)
+    std::cout << var;
 
-  std::cout << "\nMessage output: ";
+  std::cout << "\nChannel: ";
+  for (auto var : messageChannel)
+    std::cout << var;
+  std::cout << " | ";
+  for (auto var : syndromeChannel)
+    std::cout << var;
+
+  std::cout << "\nDecoder: ";
   for (auto var : messageOutput)
+    std::cout << var;
+  std::cout << " | ";
+  for (auto var : syndromeOutput)
     std::cout << var;
 }

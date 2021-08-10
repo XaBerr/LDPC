@@ -13,9 +13,9 @@ Gallager::Gallager(int _n, int _k)
       rows{_n - _k},
       columns{_k},
       H(rows, std::vector<int>(columns)),
-      message{_n - _k, 0},
-      syndrome{_k, 0},
-      codeword{_n, 0} {
+      message(columns),
+      syndrome(rows),
+      codeword(_n) {
   std::vector<int> shuffle1(columns);
   std::vector<int> shuffle2(columns);
   for (int i = 0; i < columns; ++i) {
@@ -58,12 +58,10 @@ const std::vector<int> &Gallager::getSyndrome(const std::vector<int> &_message) 
   int temp;
   for (size_t i = 0; i < rows; i++) {
     temp = 0;
-    for (size_t j = 0; j < columns; j++) {
-      temp += H[i][j] * _message[j];
-    }
+    for (size_t j = 0; j < columns; j++)
+      temp ^= H[i][j] * _message[j];
     syndrome[i] = temp;
   }
-
   return syndrome;
 }
 
