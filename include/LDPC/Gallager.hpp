@@ -11,6 +11,8 @@ class Gallager {
   const int rows;
   const int columns;
   std::vector<std::vector<int>> H;
+  std::vector<std::vector<int>> codewordsLinks;
+  std::vector<std::vector<int>> paritiesLinks;
   std::vector<int> message;
   std::vector<int> syndrome;
   std::vector<int> codeword;

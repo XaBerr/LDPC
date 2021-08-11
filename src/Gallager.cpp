@@ -13,6 +13,8 @@ Gallager::Gallager(int _n, int _k)
       rows{_n - _k},
       columns{_k},
       H(rows, std::vector<int>(columns)),
+      codewordsLinks(n, std::vector<int>()),
+      paritiesLinks(rows, std::vector<int>()),
       message(columns),
       syndrome(rows),
       codeword(_n) {
@@ -24,14 +26,22 @@ Gallager::Gallager(int _n, int _k)
   }
   std::shuffle(shuffle1.begin(), shuffle1.end(), uniform.getGenerator());
   std::shuffle(shuffle2.begin(), shuffle2.end(), uniform.getGenerator());
+  int k;
   for (size_t i = 0; i < rows / 3; i++)
     for (size_t j = 0; j < 3 * columns / rows; j++) {
+      k = j + i * 3 * columns / rows;
       // first band
-      H[i][j + i * 3 * columns / rows] = 1;
+      H[i][k] = 1;
+      codewordsLinks[k].push_back(i);
+      paritiesLinks[i].push_back(k);
       // second band
-      H[i + 1 * rows / 3][shuffle1[j + i * 3 * columns / rows]] = 1;
+      H[i + 1 * rows / 3][shuffle1[k]] = 1;
+      codewordsLinks[shuffle1[k]].push_back(i + 1 * rows / 3);
+      paritiesLinks[i + 1 * rows / 3].push_back(shuffle1[k]);
       // third band
-      H[i + 2 * rows / 3][shuffle2[j + i * 3 * columns / rows]] = 1;
+      H[i + 2 * rows / 3][shuffle2[k]] = 1;
+      codewordsLinks[shuffle2[k]].push_back(i + 2 * rows / 3);
+      paritiesLinks[i + 2 * rows / 3].push_back(shuffle2[k]);
     }
 }
 
@@ -56,9 +66,9 @@ int Gallager::validateK(int _n, int _k) {
 
 const std::vector<int> &Gallager::getSyndrome(const std::vector<int> &_message) {
   int temp;
-  for (size_t i = 0; i < rows; i++) {
+  for (int i = 0; i < rows; i++) {
     temp = 0;
-    for (size_t j = 0; j < columns; j++)
+    for (int j = 0; j < columns; j++)
       temp ^= H[i][j] * _message[j];
     syndrome[i] = temp;
   }
@@ -111,13 +121,24 @@ std::vector<int> Gallager::decoderBitFlip(std::vector<int> _message, std::vector
 }
 
 std::vector<int> Gallager::decoderBealivePropagation(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations) {
-  std::vector<float> r(columns, loglikelihood(0.5));
-  std::vector<std::vector<float>> M(rows, r);
-  std::vector<std::vector<float>> E(rows, std::vector<float>(columns));
-  std::vector<float> L(columns);
+  std::vector<int> newSyndrome(_syndrome);
+  std::vector<int> codeword(n);
+  std::vector<float> r(n);  // loglikelihood(0.005)
   bool success;
   int i, j, ii, jj;
-  float temp;
+  float temp, errorProbability = 0.01;
+  for (i = 0; i < columns; i++) {
+    codeword[i] = _message[i];
+    r[i]        = _message[i] ? loglikelihood(errorProbability) : -loglikelihood(errorProbability);
+  }
+  for (j = 0; j < rows; j++) {
+    codeword[j + columns] = _message[j];
+    r[j + columns]        = _syndrome[j] ? loglikelihood(errorProbability) : -loglikelihood(errorProbability);
+  }
+
+  std::vector<std::vector<float>> M(rows, r);
+  std::vector<std::vector<float>> E(rows, std::vector<float>(n));
+  std::vector<float> L(n);
   std::cout << "M matrix: " << M.size() << " " << M[0].size() << std::endl;
   std::cout << "E matrix: " << E.size() << " " << E[0].size() << std::endl;
   std::cout << "rows: " << rows << " columns: " << columns << std::endl;
@@ -125,43 +146,49 @@ std::vector<int> Gallager::decoderBealivePropagation(std::vector<int> _message, 
   while (0 < _maxNumberOfIterations--) {
     // extrinsic probabilities
     for (j = 0; j < rows; j++) {
-      for (i = 0; i < columns; i++)
-        if (H[j][i]) {  // problem
-          temp = 1;
-          for (ii = 0; ii < columns; ii++)
-            if (H[j][ii] && ii != i)
-              temp *= tanh(M[j][ii] / 2);
+      for (i = 0; i < paritiesLinks[j].size(); i++) {
+        temp = 1;
+        for (ii = 0; ii < paritiesLinks[j].size(); ii++)
+          if (paritiesLinks[j][ii] != paritiesLinks[j][i])
+            temp *= tanh(M[j][paritiesLinks[j][ii]] / 2);
 
-          E[j][i] = log((1 + temp) / (1 - temp));
-        }
+        E[j][paritiesLinks[j][i]] = log((1 + temp) / (1 - temp));
+      }
     }
+
     // loglikelihood
-    success = true;
-    for (i = 0; i < columns; i++) {
+    for (i = 0; i < n; i++) {  // problem
       temp = 0;
-      for (j = 0; j < rows; j++)
-        if (H[j][i])  // problem
-          temp += E[j][i];
+      for (j = 0; j < codewordsLinks[i].size(); j++)
+        temp += E[codewordsLinks[i][j]][i];
 
-      L[i] = r[i] + temp;
-      if (L[i] > 0 != _message[i])
-        success = false;
-      _message[i] = (L[i] > 0) ? 0 : 1;
+      L[i]        = r[i] + temp;
+      codeword[i] = (L[i] > 0) ? 0 : 1;
     }
+
+    // exit condition
+    newSyndrome = getSyndrome(codeword);
+    success     = true;
+    for (i = 0; i < rows; i++)
+      if (newSyndrome[i] == codeword[i + columns]) {
+        success = false;
+        break;
+      }
+
     if (success)
       return _message;
-    // intrinsic probabilities
-    for (i = 0; i < columns; i++) {
-      for (j = 0; j < rows; j++)
-        if (H[j][i]) {  // problem
-          temp = 0;
-          for (jj = 0; jj < rows; jj++)
-            if (H[jj][i] && j != jj)
-              temp += E[jj][i];
 
-          M[j][i] = temp + r[i];
-        }
+    // intrinsic probabilities
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < codewordsLinks[i].size(); j++) {  // problem
+        temp = 0;
+        for (jj = 0; jj < codewordsLinks[i].size(); jj++)
+          if (codewordsLinks[i][j] != codewordsLinks[i][jj])
+            temp += E[codewordsLinks[i][jj]][i];
+
+        M[codewordsLinks[i][j]][i] = temp + r[i];
+      }
     }
   }
-  return _message;
+  return codeword;
 }
