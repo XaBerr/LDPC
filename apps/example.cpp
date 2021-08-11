@@ -34,7 +34,7 @@ int main(int argc, char const* argv[]) {
   messageChannel  = messageInput;
   syndromeChannel = syndromeInput;
   channel(messageChannel, syndromeChannel, 0.05);
-  messageOutput  = ldpc.decoderBitFlip(messageChannel, syndromeChannel);
+  messageOutput  = ldpc.decoderBealivePropagation(messageChannel, syndromeChannel);
   syndromeOutput = ldpc.getSyndrome(messageOutput);
 
   auto H = ldpc.getH();

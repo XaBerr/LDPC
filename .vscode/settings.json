@@ -50,7 +50,22 @@
     "system_error": "cpp",
     "type_traits": "cpp",
     "typeinfo": "cpp",
-    "string_view": "cpp"
+    "string_view": "cpp",
+    "atomic": "cpp",
+    "condition_variable": "cpp",
+    "cstdarg": "cpp",
+    "algorithm": "cpp",
+    "iterator": "cpp",
+    "map": "cpp",
+    "memory_resource": "cpp",
+    "random": "cpp",
+    "regex": "cpp",
+    "set": "cpp",
+    "string": "cpp",
+    "future": "cpp",
+    "mutex": "cpp",
+    "thread": "cpp",
+    "variant": "cpp"
   },
   "C_Cpp.loggingLevel": "Debug",
   "C_Cpp.errorSquiggles": "Disabled"

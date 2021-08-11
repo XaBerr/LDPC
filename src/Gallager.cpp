@@ -109,3 +109,49 @@ std::vector<int> Gallager::decoderBitFlip(std::vector<int> _message, std::vector
   }
   return _message;
 }
+
+std::vector<int> Gallager::decoderBealivePropagation(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations) {
+  std::vector<float> r(columns, loglikelihood(0.5));
+  std::vector<std::vector<float>> M(rows, std::vector<float>(columns, loglikelihood(0.5)));
+  std::vector<std::vector<float>> E(rows, std::vector<float>(columns, 0));
+  std::vector<float> L(columns);
+  bool success;
+  int i, j, jj;
+  float temp;
+  while (0 < _maxNumberOfIterations--) {
+    // extrinsic probabilities
+    for (j = 0; j < rows; j++) {
+      temp = 1;
+      for (i = 0; i < columns; i++) {
+        temp *= tanh(M[j][i] / 2);
+      }
+      E[j][i] = log((1 + temp) / (1 - temp));
+    }
+    // loglikelihood
+    success = true;
+    for (i = 0; i < columns; i++) {
+      temp = 0;
+      for (j = 0; j < rows; j++)
+        temp += E[j][i];
+
+      L[i] = r[i] + temp;
+      if (L[i] > 0 != _message[i])
+        success = false;
+      _message[i] = (L[i] > 0) ? 0 : 1;
+    }
+    if (success)
+      return _message;
+    // intrinsic probabilities
+    for (i = 0; i < columns; i++) {
+      for (j = 0; j < rows; j++) {
+        temp = 0;
+        for (jj = 0; jj < rows; jj++)
+          if (j != jj)
+            temp += E[jj][i];
+
+        M[j][i] = temp + r[i];
+      }
+    }
+  }
+  return _message;
+}
