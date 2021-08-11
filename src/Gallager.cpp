@@ -112,27 +112,36 @@ std::vector<int> Gallager::decoderBitFlip(std::vector<int> _message, std::vector
 
 std::vector<int> Gallager::decoderBealivePropagation(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations) {
   std::vector<float> r(columns, loglikelihood(0.5));
-  std::vector<std::vector<float>> M(rows, std::vector<float>(columns, loglikelihood(0.5)));
-  std::vector<std::vector<float>> E(rows, std::vector<float>(columns, 0));
+  std::vector<std::vector<float>> M(rows, r);
+  std::vector<std::vector<float>> E(rows, std::vector<float>(columns));
   std::vector<float> L(columns);
   bool success;
-  int i, j, jj;
+  int i, j, ii, jj;
   float temp;
+  std::cout << "M matrix: " << M.size() << " " << M[0].size() << std::endl;
+  std::cout << "E matrix: " << E.size() << " " << E[0].size() << std::endl;
+  std::cout << "rows: " << rows << " columns: " << columns << std::endl;
+
   while (0 < _maxNumberOfIterations--) {
     // extrinsic probabilities
     for (j = 0; j < rows; j++) {
-      temp = 1;
-      for (i = 0; i < columns; i++) {
-        temp *= tanh(M[j][i] / 2);
-      }
-      E[j][i] = log((1 + temp) / (1 - temp));
+      for (i = 0; i < columns; i++)
+        if (H[j][i]) {  // problem
+          temp = 1;
+          for (ii = 0; ii < columns; ii++)
+            if (H[j][ii] && ii != i)
+              temp *= tanh(M[j][ii] / 2);
+
+          E[j][i] = log((1 + temp) / (1 - temp));
+        }
     }
     // loglikelihood
     success = true;
     for (i = 0; i < columns; i++) {
       temp = 0;
       for (j = 0; j < rows; j++)
-        temp += E[j][i];
+        if (H[j][i])  // problem
+          temp += E[j][i];
 
       L[i] = r[i] + temp;
       if (L[i] > 0 != _message[i])
@@ -143,14 +152,15 @@ std::vector<int> Gallager::decoderBealivePropagation(std::vector<int> _message, 
       return _message;
     // intrinsic probabilities
     for (i = 0; i < columns; i++) {
-      for (j = 0; j < rows; j++) {
-        temp = 0;
-        for (jj = 0; jj < rows; jj++)
-          if (j != jj)
-            temp += E[jj][i];
+      for (j = 0; j < rows; j++)
+        if (H[j][i]) {  // problem
+          temp = 0;
+          for (jj = 0; jj < rows; jj++)
+            if (H[jj][i] && j != jj)
+              temp += E[jj][i];
 
-        M[j][i] = temp + r[i];
-      }
+          M[j][i] = temp + r[i];
+        }
     }
   }
   return _message;
