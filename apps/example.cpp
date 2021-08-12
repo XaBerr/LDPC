@@ -45,15 +45,7 @@ int main(int argc, char const* argv[]) {
     std::cout << std::endl;
   }
 
-  auto Hgauss = ldpc.eliminationGaussJordan();
-  std::cout << "\nHgauss matrix: " << Hgauss.size() << " " << Hgauss[5].size() << std::endl;
-  for (auto row : Hgauss) {
-    for (auto col : row)
-      std::cout << (int)col;
-    std::cout << std::endl;
-  }
-
-  auto Hgauss2 = ldpc.gaussReduce(H);
+  auto Hgauss2 = ldpc.gaussianElimination();
   std::cout << "\nHgauss2 matrix: " << Hgauss2.size() << " " << Hgauss2[5].size() << std::endl;
   for (auto row : Hgauss2) {
     for (auto col : row)

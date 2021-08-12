@@ -192,120 +192,42 @@ std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _m
   return codeword;
 }
 
-std::vector<std::vector<uint8_t>> Gallager::eliminationGaussJordan() {
-  int row                                        = m;
-  int column                                     = n;
-  std::vector<std::vector<uint8_t>> GuassHMatrix = H;
-  // GuassHMatrix = HMatrix;
-  int i = 0, j = 0;
-  int r, s, p, t;
-  while (i < row && j < column) {
-    if (GuassHMatrix[i][j] == 0) {
-      for (t = i + 1; t < row; ++t) {
-        if (GuassHMatrix[t][j] == 1) {
-          for (s = 0; s < column; s++) {
-            p                  = GuassHMatrix[i][s];
-            GuassHMatrix[i][s] = GuassHMatrix[t][s];
-            GuassHMatrix[t][s] = p;
-          }
-          break;
-        }
-      }
-    }
-
-    if (GuassHMatrix[i][j] == 0) {
-      ++j;
-      continue;
-    }
-    for (r = i + 1; r < row; ++r) {
-      if (GuassHMatrix[r][j] == 1)
-        for (s = 0; s < column; s++) {
-          GuassHMatrix[r][s] += GuassHMatrix[i][s];
-          GuassHMatrix[r][s] = GuassHMatrix[r][s] % 2;
-        }
-    }
-
-    if (i >= 1) {
-      for (r = i - 1; r >= 0; --r) {
-        if (GuassHMatrix[r][j] == 1)
-          for (s = j; s < column; s++) {
-            GuassHMatrix[r][s] += GuassHMatrix[i][s];
-            GuassHMatrix[r][s] = GuassHMatrix[r][s] % 2;
-          }
-      }
-    }
-    i++;
-    j++;
-  }
-  return GuassHMatrix;
-}
-
-std::vector<std::vector<uint8_t>> Gallager::gaussReduce(std::vector<std::vector<uint8_t>> H) {
-  int i, j, r, last;
-  bool tmp_elem;
+std::vector<std::vector<uint8_t>> Gallager::gaussianElimination() {
   std::vector<std::vector<uint8_t>> H2 = H;
-
-  /* gaussian elimination performed on H2 but exchanging also
-	 * rows of H.
-	 */
-
-  r    = 0;
-  last = n - k;
+  int i, j, r = 0, last = n - k;
 
   /* iterate over rows */
   while (1) {
     while (r < last) {
-      /* find the first "1" in this row after position r */
-      for (i = r; i < n; i++) {
-        if (H2[r][i]) {
+      // find the first "1" in this row after position r
+      for (i = r; i < n; i++)
+        if (H2[r][i])
           break;
-        }
-      }
 
-      /* row has no 1s after position r: exchange with another one */
+      // row has no 1s after position r: exchange with another one
       if (i == n) {
-        last = last - 1;
+        last--;
 
-        /* swap rows */
-        for (j = 0; j < n; j++) {
-          tmp_elem    = H2[last][j];
-          H2[last][j] = H2[r][j];
-          H2[r][j]    = tmp_elem;
-        }
-
-        /* row has at least a 1: go on */
-      } else {
+        // swap rows
+        for (j = 0; j < n; j++)
+          std::swap(H2[last][j], H2[r][j]);
+      } else
         break;
-      }
     }
 
-    /* break if we reached the last row */
-    if (r == last) break;
+    // break if we reached the last row
+    if (r == last)
+      break;
 
-    /* swap column r and i to put a pivot in row r.
-		 * This must be done both on H2 and H */
-    for (j = 0; j < n - k; j++) {
-      tmp_elem = H2[j][i];
-      H2[j][i] = H2[j][r];
-      H2[j][r] = tmp_elem;
+    // swap column r and i to put a pivot in row r.
+    for (j = 0; j < n - k; j++)
+      std::swap(H2[j][i], H2[j][r]);
 
-      tmp_elem = H[j][i];
-      H[j][i]  = H[j][r];
-      H[j][r]  = tmp_elem;
-    }
-
-    /* for all rows (except pivot) */
-    for (i = 0; i < n - k; i++) {
-      /* if the r-th column contains "1": subtract */
-      if ((i != r) && (H2[i][r])) {
-        /* for all remaining elements in the current row */
-        for (j = r; j < n; j++) {
-          /* note: bitwise subtraction is a XOR, like sum */
-          tmp_elem = H2[i][j] ^ H2[r][j];
-          H2[i][j] = tmp_elem;
-        }
-      }
-    }
+    // for all rows (except pivot)
+    for (i = 0; i < n - k; i++)
+      if ((i != r) && H2[i][r])
+        for (j = r; j < n; j++)
+          H2[i][j] = H2[i][j] ^ H2[r][j];
 
     r++;
   }
