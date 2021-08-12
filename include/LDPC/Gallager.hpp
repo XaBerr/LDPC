@@ -8,8 +8,7 @@ namespace LDPC {
 class Gallager {
   const int n;
   const int k;
-  const int rows;
-  const int columns;
+  const int m;
   std::vector<std::vector<int>> H;
   std::vector<std::vector<int>> codewordsLinks;
   std::vector<std::vector<int>> paritiesLinks;
