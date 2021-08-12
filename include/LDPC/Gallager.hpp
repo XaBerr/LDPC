@@ -32,7 +32,8 @@ class Gallager {
   std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations = 30);
   std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations = 30);
   const std::vector<std::vector<uint8_t>> &getH() { return H; }
-  void eliminationGaussJordan();
+  std::vector<std::vector<uint8_t>> eliminationGaussJordan();
+  std::vector<std::vector<uint8_t>> gaussReduce(std::vector<std::vector<uint8_t>> H);
 };
 }  // namespace LDPC
 

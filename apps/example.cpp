@@ -16,8 +16,8 @@ void channel(std::vector<uint8_t>& _message, std::vector<uint8_t>& _syndrome, fl
 }
 
 int main(int argc, char const* argv[]) {
-  const int n = 30 * 2;
-  const int k = 21 * 2;
+  const int n = 30;
+  const int k = 21;
   const int m = n - k;
   std::vector<uint8_t> messageInput(k);
   std::vector<uint8_t> syndromeInput(m);
@@ -40,6 +40,22 @@ int main(int argc, char const* argv[]) {
   auto H = ldpc.getH();
   std::cout << "\nH matrix: " << H.size() << " " << H[5].size() << std::endl;
   for (auto row : H) {
+    for (auto col : row)
+      std::cout << (int)col;
+    std::cout << std::endl;
+  }
+
+  auto Hgauss = ldpc.eliminationGaussJordan();
+  std::cout << "\nHgauss matrix: " << Hgauss.size() << " " << Hgauss[5].size() << std::endl;
+  for (auto row : Hgauss) {
+    for (auto col : row)
+      std::cout << (int)col;
+    std::cout << std::endl;
+  }
+
+  auto Hgauss2 = ldpc.gaussReduce(H);
+  std::cout << "\nHgauss2 matrix: " << Hgauss2.size() << " " << Hgauss2[5].size() << std::endl;
+  for (auto row : Hgauss2) {
     for (auto col : row)
       std::cout << (int)col;
     std::cout << std::endl;
