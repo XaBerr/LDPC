@@ -196,8 +196,8 @@ std::vector<std::vector<uint8_t>> Gallager::gaussianElimination() {
   std::vector<std::vector<uint8_t>> H2 = H;
   int i, j, r = 0, last = n - k;
 
-  /* iterate over rows */
-  while (1) {
+  // iterate over rows
+  while (true) {
     while (r < last) {
       // find the first "1" in this row after position r
       for (i = r; i < n; i++)
