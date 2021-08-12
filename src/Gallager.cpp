@@ -11,14 +11,14 @@ Gallager::Gallager(int _n, int _k)
     : n{validateN(_n, _k)},
       k{validateK(_n, _k)},
       m{_n - _k},
-      H(m, std::vector<int>(n)),
-      codewordsLinks(n, std::vector<int>()),
-      paritiesLinks(m, std::vector<int>()),
+      H(m, std::vector<uint8_t>(n)),
+      codewordsLinks(n, std::vector<uint8_t>()),
+      paritiesLinks(m, std::vector<uint8_t>()),
       message(n),
       syndrome(m),
       codeword(n) {
-  std::vector<int> shuffle1(n);
-  std::vector<int> shuffle2(n);
+  std::vector<uint8_t> shuffle1(n);
+  std::vector<uint8_t> shuffle2(n);
   for (int i = 0; i < n; ++i) {
     shuffle1[i] = i;
     shuffle2[i] = i;
@@ -62,7 +62,7 @@ int Gallager::validateK(int _n, int _k) {
   return _k;
 }
 
-const std::vector<int> &Gallager::getSyndrome(const std::vector<int> &_message) {
+const std::vector<uint8_t> &Gallager::getSyndrome(const std::vector<uint8_t> &_message) {
   int temp;
   for (int i = 0; i < m; i++) {
     temp = 0;
@@ -74,10 +74,10 @@ const std::vector<int> &Gallager::getSyndrome(const std::vector<int> &_message) 
   return syndrome;
 }
 
-std::vector<int> Gallager::decoderBitFlip(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations) {
-  // std::vector<int> errorMessage(n);
-  // std::vector<int> errorSyndrome(m);
-  // std::vector<int> newSyndrome(_syndrome);
+std::vector<uint8_t> Gallager::decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations) {
+  // std::vector<uint8_t> errorMessage(n);
+  // std::vector<uint8_t> errorSyndrome(m);
+  // std::vector<uint8_t> newSyndrome(_syndrome);
   // bool success;
   // int i, j, maxPositionMessage, maxPositionSyndrome;
   // while (0 < _maxNumberOfIterations--) {
@@ -119,9 +119,9 @@ std::vector<int> Gallager::decoderBitFlip(std::vector<int> _message, std::vector
   return _message;
 }
 
-std::vector<int> Gallager::decoderBealivePropagation(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations) {
-  // std::vector<int> newSyndrome(_syndrome);
-  // std::vector<int> codeword(n);
+std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations) {
+  std::vector<uint8_t> newSyndrome(_syndrome);
+  std::vector<uint8_t> codeword(n);
   // std::vector<float> r(n);  // loglikelihood(0.005)
   // bool success;
   // int i, j, ii, jj;
@@ -190,4 +190,42 @@ std::vector<int> Gallager::decoderBealivePropagation(std::vector<int> _message, 
   //   }
   // }
   return codeword;
+}
+
+void Gallager::eliminationGaussJordan() {
+  //(A, b, N)
+  // std::vector<std::vector<uint8_t>> A;
+  // int b, N;
+  // int j, i, temp, max;
+  // std::vector<uint8_t> x;
+  // for (int col = 0; col < N; col++) {
+  //   j   = col;
+  //   max = A[j][j];
+
+  //   for (i = col + 1; i < N; i++) {
+  //     temp = abs(A[i][col]);
+  //     if (temp > max) {
+  //       j   = i;
+  //       max = temp;
+  //     }
+  //   }
+  //   swap_rows(A, b, col, j);
+
+  //   for (i = col + 1; i < N; i++) {
+  //     temp = A[i][col];
+  //     for (j = col + 1; j < N; j++) {
+  //       A[i][j] = (A[i][j] != (temp && A[col][j])) ? 1 : 0;
+  //     }
+  //     A[i][col] = 0;
+  //     b[i]      = (b[i] != (temp && b[col])) ? 1 : 0;
+  //   }
+  // }
+  // for (col = N - 1; col >= 0; col--) {
+  //   temp = b[col];
+  //   for (j = N - 1; j > col; j--) {
+  //     temp = (temp != (x[j] && A[col][j])) ? 1 : 0;
+  //   }
+  //   x[col] = temp;
+  // }
+  // return x;
 }

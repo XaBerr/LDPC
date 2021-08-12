@@ -3,18 +3,19 @@
 
 #include <vector>
 #include <math.h>
+#include <stdint.h>
 
 namespace LDPC {
 class Gallager {
   const int n;
   const int k;
   const int m;
-  std::vector<std::vector<int>> H;
-  std::vector<std::vector<int>> codewordsLinks;
-  std::vector<std::vector<int>> paritiesLinks;
-  std::vector<int> message;
-  std::vector<int> syndrome;
-  std::vector<int> codeword;
+  std::vector<std::vector<uint8_t>> H;
+  std::vector<std::vector<uint8_t>> codewordsLinks;
+  std::vector<std::vector<uint8_t>> paritiesLinks;
+  std::vector<uint8_t> message;
+  std::vector<uint8_t> syndrome;
+  std::vector<uint8_t> codeword;
 
   int validateN(int _n, int _k);
   int validateK(int _n, int _k);
@@ -24,13 +25,14 @@ class Gallager {
 
  public:
   Gallager(int _n, int _k);
-  // const std::vector<int> &decode(const std::vector<int> &_codeword);
-  // const std::vector<int> &encode(const std::vector<int> &_message);
-  const std::vector<int> &getSyndrome(const std::vector<int> &_message);
-  // const std::vector<int> &decode(const std::vector<int> &_message, const std::vector<int> &_syndrome);
-  std::vector<int> decoderBitFlip(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations = 30);
-  std::vector<int> decoderBealivePropagation(std::vector<int> _message, std::vector<int> _syndrome, int _maxNumberOfIterations = 30);
-  const std::vector<std::vector<int>> &getH() { return H; }
+  // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_codeword);
+  // const std::vector<uint8_t> &encode(const std::vector<uint8_t> &_message);
+  const std::vector<uint8_t> &getSyndrome(const std::vector<uint8_t> &_message);
+  // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_message, const std::vector<uint8_t> &_syndrome);
+  std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations = 30);
+  std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations = 30);
+  const std::vector<std::vector<uint8_t>> &getH() { return H; }
+  void eliminationGaussJordan();
 };
 }  // namespace LDPC
 
