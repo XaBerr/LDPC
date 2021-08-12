@@ -12,6 +12,7 @@ Gallager::Gallager(int _n, int _k)
       k{validateK(_n, _k)},
       m{_n - _k},
       H(m, std::vector<uint8_t>(n)),
+      G(m, std::vector<uint8_t>(n)),
       codewordsLinks(n, std::vector<uint8_t>()),
       paritiesLinks(m, std::vector<uint8_t>()),
       message(n),
@@ -192,8 +193,8 @@ std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _m
   return codeword;
 }
 
-std::vector<std::vector<uint8_t>> Gallager::gaussianElimination() {
-  std::vector<std::vector<uint8_t>> H2 = H;
+const std::vector<std::vector<uint8_t>> &Gallager::gaussianElimination() {
+  H2 = H;
   int i, j, r = 0, last = n - k;
 
   // iterate over rows
@@ -220,8 +221,10 @@ std::vector<std::vector<uint8_t>> Gallager::gaussianElimination() {
       break;
 
     // swap column r and i to put a pivot in row r.
-    for (j = 0; j < n - k; j++)
+    for (j = 0; j < n - k; j++) {
       std::swap(H2[j][i], H2[j][r]);
+      std::swap(H[j][i], H[j][r]);
+    }
 
     // for all rows (except pivot)
     for (i = 0; i < n - k; i++)
@@ -232,4 +235,18 @@ std::vector<std::vector<uint8_t>> Gallager::gaussianElimination() {
     r++;
   }
   return H2;
+}
+
+const std::vector<std::vector<uint8_t>> &Gallager::generateG() {
+  for (int i = 0; i < k; i++) {
+    // P
+    for (int j = 0; j < n - k; j++)
+      G[i][j] = H2[j][i + (n - k)];
+
+    // I
+    for (int j = n - k; j < n; j++)
+      if (j - (n - k) == i)
+        G[i][j] = 1;
+  }
+  return G;
 }

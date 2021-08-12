@@ -11,6 +11,8 @@ class Gallager {
   const int k;
   const int m;
   std::vector<std::vector<uint8_t>> H;
+  std::vector<std::vector<uint8_t>> H2;
+  std::vector<std::vector<uint8_t>> G;
   std::vector<std::vector<uint8_t>> codewordsLinks;
   std::vector<std::vector<uint8_t>> paritiesLinks;
   std::vector<uint8_t> message;
@@ -32,7 +34,8 @@ class Gallager {
   std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations = 30);
   std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations = 30);
   const std::vector<std::vector<uint8_t>> &getH() { return H; }
-  std::vector<std::vector<uint8_t>> gaussianElimination();
+  const std::vector<std::vector<uint8_t>> &gaussianElimination();
+  const std::vector<std::vector<uint8_t>> &generateG();
 };
 }  // namespace LDPC
 
