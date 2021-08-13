@@ -33,15 +33,17 @@ class Gallager {
 
  public:
   Gallager(size_t _n = 16, size_t _k = 5, size_t _weightColumns = 3);
-  // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_codeword);
-  // const std::vector<uint8_t> &encode(const std::vector<uint8_t> &_message);
-  const std::vector<uint8_t> &getSyndrome(const std::vector<uint8_t> &_message);
-  // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_message, const std::vector<uint8_t> &_syndrome);
-  std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
-  std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
   const std::vector<std::vector<uint8_t>> &generateH();
   const std::vector<std::vector<uint8_t>> &generateHRowEchelon();
   const std::vector<std::vector<uint8_t>> &generateG();
+
+  const std::vector<uint8_t> &checkSyndrome(const std::vector<uint8_t> &_codeword);
+  const std::vector<uint8_t> &getCodeword(const std::vector<uint8_t> &_message);
+  // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_codeword);
+  // const std::vector<uint8_t> &encode(const std::vector<uint8_t> &_message);
+  // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_message, const std::vector<uint8_t> &_syndrome);
+  std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
+  std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
 };
 }  // namespace LDPC
 

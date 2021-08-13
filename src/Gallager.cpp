@@ -55,16 +55,27 @@ size_t Gallager::validateM(size_t _n, size_t _k, size_t _weightColumns) {
   return _n - _k;
 }
 
-const std::vector<uint8_t> &Gallager::getSyndrome(const std::vector<uint8_t> &_message) {
-  size_t temp;
-  for (size_t i = 0; i < m; i++) {
+const std::vector<uint8_t> &Gallager::checkSyndrome(const std::vector<uint8_t> &_codeword) {
+  size_t i, j, temp;
+  for (i = 0; i < k; i++) {
     temp = 0;
-    // I use only the first part of H
-    for (size_t j = 0; j < k; j++)
-      temp ^= H[i][j] * _message[j];
+    for (j = 0; j < n; j++)
+      temp ^= H[i][j] * _codeword[j];
     syndrome[i] = temp;
   }
   return syndrome;
+}
+
+const std::vector<uint8_t> &Gallager::getCodeword(const std::vector<uint8_t> &_message) {
+  size_t i, j, temp;
+
+  for (i = 0; i < n; i++) {
+    temp = 0;
+    for (j = 0; j < k; j++)
+      temp ^= _message[j] * G[j][i];
+    codeword[i] = temp;
+  }
+  return codeword;
 }
 
 std::vector<uint8_t> Gallager::decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations) {
