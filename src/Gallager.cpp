@@ -7,80 +7,82 @@
 using namespace LDPC;
 static Uniform uniform;
 
-Gallager::Gallager(int _n, int _k)
-    : n{validateN(_n, _k)},
+Gallager::Gallager(size_t _n, size_t _k, size_t _weightColumns)
+    : n{validateN(_n)},
       k{validateK(_n, _k)},
-      m{_n - _k},
+      m{validateM(_n, _k, _weightColumns)},
+      weightColumns{_weightColumns},
+      weightRows{weightColumns * n / m},
       H(m, std::vector<uint8_t>(n)),
+      HRowEchelon(),
       G(m, std::vector<uint8_t>(n)),
-      codewordsLinks(n, std::vector<uint8_t>()),
-      paritiesLinks(m, std::vector<uint8_t>()),
+      codewordsLinks(n, std::vector<size_t>()),
+      paritiesLinks(m, std::vector<size_t>()),
       message(n),
       syndrome(m),
       codeword(n) {
-  std::vector<uint8_t> shuffle1(n);
-  std::vector<uint8_t> shuffle2(n);
-  for (int i = 0; i < n; ++i) {
-    shuffle1[i] = i;
-    shuffle2[i] = i;
+  size_t i, j, u, k, v;
+  std::vector<std::vector<size_t>> shuffles(weightColumns, std::vector<size_t>(n));
+  for (u = 0; u < weightColumns; u++) {
+    for (i = 0; i < n; ++i) {
+      shuffles[u][i] = i;
+    }
+    if (u > 0)
+      std::shuffle(shuffles[u].begin(), shuffles[u].end(), uniform.getGenerator());
   }
-  std::shuffle(shuffle1.begin(), shuffle1.end(), uniform.getGenerator());
-  std::shuffle(shuffle2.begin(), shuffle2.end(), uniform.getGenerator());
-  int k;
-  for (size_t i = 0; i < m / 3; i++)
-    for (size_t j = 0; j < 3 * n / m; j++) {
-      k = j + i * 3 * n / m;
-      // first band
-      H[i][k] = 1;
-      codewordsLinks[k].push_back(i);
-      paritiesLinks[i].push_back(k);
-      // second band
-      H[i + 1 * m / 3][shuffle1[k]] = 1;
-      codewordsLinks[shuffle1[k]].push_back(i + 1 * m / 3);
-      paritiesLinks[i + 1 * m / 3].push_back(shuffle1[k]);
-      // third band
-      H[i + 2 * m / 3][shuffle2[k]] = 1;
-      codewordsLinks[shuffle2[k]].push_back(i + 2 * m / 3);
-      paritiesLinks[i + 2 * m / 3].push_back(shuffle2[k]);
+  for (i = 0; i < m / weightColumns; i++)
+    for (j = 0; j < weightColumns * n / m; j++) {
+      k = j + i * weightColumns * n / m;
+      for (u = 0; u < weightColumns; u++) {
+        v = i + u * m / weightColumns;
+        // bands
+        H[v][shuffles[u][k]] = 1;
+        codewordsLinks[shuffles[u][k]].push_back(v);
+        paritiesLinks[v].push_back(shuffles[u][k]);
+      }
     }
 }
 
-int Gallager::validateN(int _n, int _k) {
+size_t Gallager::validateN(size_t _n) {
   if (_n <= 0)
     throw std::invalid_argument("Error: n must be > 0.");
   return _n;
 }
 
-int Gallager::validateK(int _n, int _k) {
+size_t Gallager::validateK(size_t _n, size_t _k) {
   if (_k <= 0)
     throw std::invalid_argument("Error: k must be > 0.");
   if (_n <= _k)
-    throw std::invalid_argument("Error: n must be > k.");
-  if ((_n - _k) % 3)
-    throw std::invalid_argument("Error: n - k must be multiple of 3.");
-  if ((3 * _n / (_n - _k)) % 1)
-    throw std::invalid_argument("Error: 3 * n / (n -k) must an integer.");
+    throw std::invalid_argument("Error: k must be < n.");
   return _k;
 }
 
+size_t Gallager::validateM(size_t _n, size_t _k, size_t _weightColumns) {
+  if ((_n - _k) % _weightColumns)
+    throw std::invalid_argument("Error: n - k (i.e. m) must be multiple of weightColumns.");
+  if ((_weightColumns * _n / (_n - _k)) % 1)
+    throw std::invalid_argument("Error: weightColumns * n / (n -k) must an integer.");
+  return _n - _k;
+}
+
 const std::vector<uint8_t> &Gallager::getSyndrome(const std::vector<uint8_t> &_message) {
-  int temp;
-  for (int i = 0; i < m; i++) {
+  size_t temp;
+  for (size_t i = 0; i < m; i++) {
     temp = 0;
     // I use only the first part of H
-    for (int j = 0; j < k; j++)
+    for (size_t j = 0; j < k; j++)
       temp ^= H[i][j] * _message[j];
     syndrome[i] = temp;
   }
   return syndrome;
 }
 
-std::vector<uint8_t> Gallager::decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations) {
+std::vector<uint8_t> Gallager::decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations) {
   // std::vector<uint8_t> errorMessage(n);
   // std::vector<uint8_t> errorSyndrome(m);
   // std::vector<uint8_t> newSyndrome(_syndrome);
   // bool success;
-  // int i, j, maxPositionMessage, maxPositionSyndrome;
+  // size_t i, j, maxPositionMessage, maxPositionSyndrome;
   // while (0 < _maxNumberOfIterations--) {
   //   newSyndrome = getSyndrome(_message);
   //   success     = true;
@@ -120,12 +122,12 @@ std::vector<uint8_t> Gallager::decoderBitFlip(std::vector<uint8_t> _message, std
   return _message;
 }
 
-std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, int _maxNumberOfIterations) {
+std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations) {
   std::vector<uint8_t> newSyndrome(_syndrome);
   std::vector<uint8_t> codeword(n);
   // std::vector<float> r(n);  // loglikelihood(0.005)
   // bool success;
-  // int i, j, ii, jj;
+  // size_t i, j, ii, jj;
   // float temp, errorProbability = 0.01;
   // for (i = 0; i < n; i++) {
   //   codeword[i] = _message[i];
@@ -194,15 +196,15 @@ std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _m
 }
 
 const std::vector<std::vector<uint8_t>> &Gallager::gaussianElimination() {
-  H2 = H;
-  int i, j, r = 0, last = n - k;
+  HRowEchelon = H;
+  size_t i, j, r = 0, last = n - k;
 
   // iterate over rows
   while (true) {
     while (r < last) {
       // find the first "1" in this row after position r
       for (i = r; i < n; i++)
-        if (H2[r][i])
+        if (HRowEchelon[r][i])
           break;
 
       // row has no 1s after position r: exchange with another one
@@ -211,7 +213,7 @@ const std::vector<std::vector<uint8_t>> &Gallager::gaussianElimination() {
 
         // swap rows
         for (j = 0; j < n; j++)
-          std::swap(H2[last][j], H2[r][j]);
+          std::swap(HRowEchelon[last][j], HRowEchelon[r][j]);
       } else
         break;
     }
@@ -222,29 +224,29 @@ const std::vector<std::vector<uint8_t>> &Gallager::gaussianElimination() {
 
     // swap column r and i to put a pivot in row r.
     for (j = 0; j < n - k; j++) {
-      std::swap(H2[j][i], H2[j][r]);
+      std::swap(HRowEchelon[j][i], HRowEchelon[j][r]);
       std::swap(H[j][i], H[j][r]);
     }
 
     // for all rows (except pivot)
     for (i = 0; i < n - k; i++)
-      if ((i != r) && H2[i][r])
+      if ((i != r) && HRowEchelon[i][r])
         for (j = r; j < n; j++)
-          H2[i][j] = H2[i][j] ^ H2[r][j];
+          HRowEchelon[i][j] = HRowEchelon[i][j] ^ HRowEchelon[r][j];
 
     r++;
   }
-  return H2;
+  return HRowEchelon;
 }
 
 const std::vector<std::vector<uint8_t>> &Gallager::generateG() {
-  for (int i = 0; i < k; i++) {
+  for (size_t i = 0; i < k; i++) {
     // P
-    for (int j = 0; j < n - k; j++)
-      G[i][j] = H2[j][i + (n - k)];
+    for (size_t j = 0; j < n - k; j++)
+      G[i][j] = HRowEchelon[j][i + (n - k)];
 
     // I
-    for (int j = n - k; j < n; j++)
+    for (size_t j = n - k; j < n; j++)
       if (j - (n - k) == i)
         G[i][j] = 1;
   }

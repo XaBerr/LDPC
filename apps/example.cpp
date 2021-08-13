@@ -16,8 +16,8 @@ void channel(std::vector<uint8_t>& _message, std::vector<uint8_t>& _syndrome, fl
 }
 
 int main(int argc, char const* argv[]) {
-  const int n = 30;
-  const int k = 21;
+  const int n = 100;
+  const int k = 10;
   const int m = n - k;
   std::vector<uint8_t> messageInput(k);
   std::vector<uint8_t> syndromeInput(m);
@@ -29,7 +29,7 @@ int main(int argc, char const* argv[]) {
   for (auto& var : messageInput)
     var = (uniform() < 0.7) ? 0 : 1;
 
-  Gallager ldpc(n, k);
+  Gallager ldpc(n, k, 10);
   syndromeInput   = ldpc.getSyndrome(messageInput);
   messageChannel  = messageInput;
   syndromeChannel = syndromeInput;
