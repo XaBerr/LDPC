@@ -267,14 +267,11 @@ const std::vector<std::vector<uint8_t>> &Gallager::generateHRowEchelon() {
 const std::vector<std::vector<uint8_t>> &Gallager::generateG() {
   size_t i, j;
   for (i = 0; i < k; i++) {
+    // I
+    G[i][i] = 1;
     // P
     for (j = 0; j < n - k; j++)
-      G[i][j] = HRowEchelon[j][i + (n - k)];
-
-    // I
-    for (j = n - k; j < n; j++)
-      if (j - (n - k) == i)
-        G[i][j] = 1;
+      G[i][j + k] = HRowEchelon[j][i + (n - k)];
   }
   return G;
 }
