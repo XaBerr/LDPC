@@ -123,76 +123,70 @@ std::vector<uint8_t> Gallager::decoderBitFlip(std::vector<uint8_t> _message, std
   return _message;
 }
 
-std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations) {
-  std::vector<uint8_t> newSyndrome(_syndrome);
-  std::vector<uint8_t> codeword(n);
-  // std::vector<float> r(n);  // loglikelihood(0.005)
-  // bool success;
-  // size_t i, j, ii, jj;
-  // float temp, errorProbability = 0.01;
-  // for (i = 0; i < n; i++) {
-  //   codeword[i] = _message[i];
-  //   r[i]        = _message[i] ? loglikelihood(errorProbability) : -loglikelihood(errorProbability);
-  // }
-  // for (j = 0; j < m; j++) {
-  //   codeword[j + n] = _message[j];
-  //   r[j + n]        = _syndrome[j] ? loglikelihood(errorProbability) : -loglikelihood(errorProbability);
-  // }
+std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _codeword, size_t _maxNumberOfIterations) {
+  std::vector<uint8_t> newSyndrome(m);
+  std::vector<float> r(n);  // loglikelihood(0.005)
+  codeword = _codeword;
+  bool success;
+  size_t i, j, ii, jj;
+  float temp, errorProbability = 0.01;
+  for (i = 0; i < n; i++)
+    r[i] = codeword[i] ? loglikelihood(errorProbability) : -loglikelihood(errorProbability);
 
-  // std::vector<std::vector<float>> M(m, r);
-  // std::vector<std::vector<float>> E(m, std::vector<float>(n));
-  // std::vector<float> L(n);
-  // std::cout << "M matrix: " << M.size() << " " << M[0].size() << std::endl;
-  // std::cout << "E matrix: " << E.size() << " " << E[0].size() << std::endl;
-  // std::cout << "m: " << m << " n: " << n << std::endl;
+  std::vector<std::vector<float>> M(m, r);
+  std::vector<std::vector<float>> E(m, std::vector<float>(n));
+  std::vector<float> L(n);
+  std::cout << "M matrix: " << M.size() << " " << M[0].size() << std::endl;
+  std::cout << "E matrix: " << E.size() << " " << E[0].size() << std::endl;
+  std::cout << "m: " << m << " n: " << n << std::endl;
 
-  // while (0 < _maxNumberOfIterations--) {
-  //   // extrinsic probabilities
-  //   for (j = 0; j < m; j++) {
-  //     for (i = 0; i < paritiesLinks[j].size(); i++) {
-  //       temp = 1;
-  //       for (ii = 0; ii < paritiesLinks[j].size(); ii++)
-  //         if (paritiesLinks[j][ii] != paritiesLinks[j][i])
-  //           temp *= tanh(M[j][paritiesLinks[j][ii]] / 2);
+  while (0 < _maxNumberOfIterations--) {
+    // extrinsic probabilities
+    for (j = 0; j < m; j++) {
+      for (i = 0; i < paritiesLinks[j].size(); i++) {
+        temp = 1;
+        for (ii = 0; ii < paritiesLinks[j].size(); ii++)
+          if (paritiesLinks[j][ii] != paritiesLinks[j][i])
+            temp *= tanh(M[j][paritiesLinks[j][ii]] / 2);
 
-  //       E[j][paritiesLinks[j][i]] = log((1 + temp) / (1 - temp));
-  //     }
-  //   }
+        E[j][paritiesLinks[j][i]] = log((1 + temp) / (1 - temp));
+      }
+    }
 
-  //   // loglikelihood
-  //   for (i = 0; i < n; i++) {  // problem
-  //     temp = 0;
-  //     for (j = 0; j < codewordsLinks[i].size(); j++)
-  //       temp += E[codewordsLinks[i][j]][i];
+    // loglikelihood
+    for (i = 0; i < n; i++) {  // problem
+      temp = 0;
+      for (j = 0; j < codewordsLinks[i].size(); j++)
+        temp += E[codewordsLinks[i][j]][i];
 
-  //     L[i]        = r[i] + temp;
-  //     codeword[i] = (L[i] > 0) ? 0 : 1;
-  //   }
+      L[i]        = r[i] + temp;
+      codeword[i] = (L[i] > 0) ? 0 : 1;
+    }
 
-  //   // exit condition
-  //   newSyndrome = getSyndrome(codeword);
-  //   success     = true;
-  //   for (i = 0; i < m; i++)
-  //     if (newSyndrome[i] == codeword[i + n]) {
-  //       success = false;
-  //       break;
-  //     }
+    // exit condition
+    newSyndrome = checkSyndrome(codeword);
+    success     = true;
+    for (i = 0; i < m; i++)
+      if (!newSyndrome[i]) {
+        success = false;
+        break;
+      }
 
-  //   if (success)
-  //     return _message;
+    if (success)
+      return codeword;
 
-  //   // intrinsic probabilities
-  //   for (i = 0; i < n; i++) {
-  //     for (j = 0; j < codewordsLinks[i].size(); j++) {  // problem
-  //       temp = 0;
-  //       for (jj = 0; jj < codewordsLinks[i].size(); jj++)
-  //         if (codewordsLinks[i][j] != codewordsLinks[i][jj])
-  //           temp += E[codewordsLinks[i][jj]][i];
+    // intrinsic probabilities
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < codewordsLinks[i].size(); j++) {  // problem
+        temp = 0;
+        for (jj = 0; jj < codewordsLinks[i].size(); jj++)
+          if (codewordsLinks[i][j] != codewordsLinks[i][jj])
+            temp += E[codewordsLinks[i][jj]][i];
 
-  //       M[codewordsLinks[i][j]][i] = temp + r[i];
-  //     }
-  //   }
-  // }
+        M[codewordsLinks[i][j]][i] = temp + r[i];
+      }
+    }
+  }
   return codeword;
 }
 

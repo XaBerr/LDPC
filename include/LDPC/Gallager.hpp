@@ -43,7 +43,7 @@ class Gallager {
   // const std::vector<uint8_t> &encode(const std::vector<uint8_t> &_message);
   // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_message, const std::vector<uint8_t> &_syndrome);
   std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
-  std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
+  std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _codeword, size_t _maxNumberOfIterations = 30);
 };
 }  // namespace LDPC
 
