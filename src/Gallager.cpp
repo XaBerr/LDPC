@@ -15,32 +15,22 @@ Gallager::Gallager(size_t _n, size_t _k, size_t _weightColumns)
       weightRows{weightColumns * n / m},
       H(m, std::vector<uint8_t>(n)),
       HRowEchelon(),
-      G(m, std::vector<uint8_t>(n)),
+      G(k, std::vector<uint8_t>(n)),
       codewordsLinks(n, std::vector<size_t>()),
       paritiesLinks(m, std::vector<size_t>()),
       message(n),
       syndrome(m),
       codeword(n) {
-  size_t i, j, u, k, v;
-  std::vector<std::vector<size_t>> shuffles(weightColumns, std::vector<size_t>(n));
-  for (u = 0; u < weightColumns; u++) {
-    for (i = 0; i < n; ++i) {
-      shuffles[u][i] = i;
-    }
-    if (u > 0)
-      std::shuffle(shuffles[u].begin(), shuffles[u].end(), uniform.getGenerator());
+  size_t i;
+  for (i = 0; i < 100; i++) {
+    generateH();
+    generateHRowEchelon();
+    if (HRowEchelon[m - 1][m - 1])
+      break;
   }
-  for (i = 0; i < m / weightColumns; i++)
-    for (j = 0; j < weightColumns * n / m; j++) {
-      k = j + i * weightColumns * n / m;
-      for (u = 0; u < weightColumns; u++) {
-        v = i + u * m / weightColumns;
-        // bands
-        H[v][shuffles[u][k]] = 1;
-        codewordsLinks[shuffles[u][k]].push_back(v);
-        paritiesLinks[v].push_back(shuffles[u][k]);
-      }
-    }
+  if (i >= 100)
+    throw std::runtime_error("Error: cannot build a full linearly independent H.");
+  generateG();
 }
 
 size_t Gallager::validateN(size_t _n) {
@@ -195,7 +185,31 @@ std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _m
   return codeword;
 }
 
-const std::vector<std::vector<uint8_t>> &Gallager::gaussianElimination() {
+const std::vector<std::vector<uint8_t>> &Gallager::generateH() {
+  size_t i, j, u, k, v;
+  std::vector<std::vector<size_t>> shuffles(weightColumns, std::vector<size_t>(n));
+  for (u = 0; u < weightColumns; u++) {
+    for (i = 0; i < n; ++i) {
+      shuffles[u][i] = i;
+    }
+    if (u > 0)
+      std::shuffle(shuffles[u].begin(), shuffles[u].end(), uniform.getGenerator());
+  }
+  for (i = 0; i < m / weightColumns; i++)
+    for (j = 0; j < weightColumns * n / m; j++) {
+      k = j + i * weightColumns * n / m;
+      for (u = 0; u < weightColumns; u++) {
+        v = i + u * m / weightColumns;
+        // bands
+        H[v][shuffles[u][k]] = 1;
+        codewordsLinks[shuffles[u][k]].push_back(v);
+        paritiesLinks[v].push_back(shuffles[u][k]);
+      }
+    }
+  return H;
+}
+
+const std::vector<std::vector<uint8_t>> &Gallager::generateHRowEchelon() {
   HRowEchelon = H;
   size_t i, j, r = 0, last = n - k;
 
@@ -240,13 +254,14 @@ const std::vector<std::vector<uint8_t>> &Gallager::gaussianElimination() {
 }
 
 const std::vector<std::vector<uint8_t>> &Gallager::generateG() {
-  for (size_t i = 0; i < k; i++) {
+  size_t i, j;
+  for (i = 0; i < k; i++) {
     // P
-    for (size_t j = 0; j < n - k; j++)
+    for (j = 0; j < n - k; j++)
       G[i][j] = HRowEchelon[j][i + (n - k)];
 
     // I
-    for (size_t j = n - k; j < n; j++)
+    for (j = n - k; j < n; j++)
       if (j - (n - k) == i)
         G[i][j] = 1;
   }

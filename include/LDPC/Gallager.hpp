@@ -7,6 +7,7 @@
 
 namespace LDPC {
 class Gallager {
+ public:
   const size_t n;
   const size_t k;
   const size_t m;
@@ -15,6 +16,8 @@ class Gallager {
   std::vector<std::vector<uint8_t>> H;
   std::vector<std::vector<uint8_t>> HRowEchelon;
   std::vector<std::vector<uint8_t>> G;
+
+ private:
   std::vector<std::vector<size_t>> codewordsLinks;
   std::vector<std::vector<size_t>> paritiesLinks;
   std::vector<uint8_t> message;
@@ -36,8 +39,8 @@ class Gallager {
   // const std::vector<uint8_t> &decode(const std::vector<uint8_t> &_message, const std::vector<uint8_t> &_syndrome);
   std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
   std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
-  const std::vector<std::vector<uint8_t>> &getH() { return H; }
-  const std::vector<std::vector<uint8_t>> &gaussianElimination();
+  const std::vector<std::vector<uint8_t>> &generateH();
+  const std::vector<std::vector<uint8_t>> &generateHRowEchelon();
   const std::vector<std::vector<uint8_t>> &generateG();
 };
 }  // namespace LDPC

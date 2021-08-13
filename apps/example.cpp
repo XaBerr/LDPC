@@ -37,17 +37,22 @@ int main(int argc, char const* argv[]) {
   messageOutput  = ldpc.decoderBealivePropagation(messageChannel, syndromeChannel);
   syndromeOutput = ldpc.getSyndrome(messageOutput);
 
-  auto H = ldpc.getH();
-  std::cout << "\nH matrix: " << H.size() << " " << H[5].size() << std::endl;
-  for (auto row : H) {
+  std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
+  for (auto row : ldpc.H) {
     for (auto col : row)
       std::cout << (int)col;
     std::cout << std::endl;
   }
 
-  auto Hgauss2 = ldpc.gaussianElimination();
-  std::cout << "\nHgauss2 matrix: " << Hgauss2.size() << " " << Hgauss2[5].size() << std::endl;
-  for (auto row : Hgauss2) {
+  std::cout << "\nHRowEchelon matrix: " << ldpc.HRowEchelon.size() << " " << ldpc.HRowEchelon[5].size() << std::endl;
+  for (auto row : ldpc.HRowEchelon) {
+    for (auto col : row)
+      std::cout << (int)col;
+    std::cout << std::endl;
+  }
+
+  std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[5].size() << std::endl;
+  for (auto row : ldpc.G) {
     for (auto col : row)
       std::cout << (int)col;
     std::cout << std::endl;
