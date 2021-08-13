@@ -11,6 +11,24 @@ void channel(std::vector<uint8_t>& _codeword, float _pError) {
       var = (var == 0) ? 1 : 0;
 }
 
+void printHexaVector(const std::vector<uint8_t>& _codeword) {
+  unsigned int out = 0;
+  for (int z = 0; z < _codeword.size(); z++) {
+    out |= (_codeword[z] << (z % 4));
+    if (z > 0 && (z % 4 == 0)) {
+      std::cout << " " << std::uppercase << std::hex << out;
+      out = 0;
+    }
+  }
+  if (_codeword.size() % 4)
+    std::cout << " " << std::uppercase << std::hex << out;
+}
+
+void printBinVector(const std::vector<uint8_t>& _codeword) {
+  for (auto var : _codeword)
+    std::cout << (int)var;
+}
+
 int main(int argc, char const* argv[]) {
   const int n = 100;
   const int k = 10;
@@ -51,17 +69,14 @@ int main(int argc, char const* argv[]) {
   }
 
   std::cout << "\nMessage: ";
-  for (auto var : messageInput)
-    std::cout << (int)var;
+  printHexaVector(messageInput);
+
   std::cout << "\nEncoder: ";
-  for (auto var : codewordInput)
-    std::cout << (int)var;
+  printHexaVector(codewordInput);
 
   std::cout << "\nChannel: ";
-  for (auto var : codewordChannel)
-    std::cout << (int)var;
+  printHexaVector(codewordChannel);
 
   std::cout << "\nDecoder: ";
-  for (auto var : codewordOutput)
-    std::cout << (int)var;
+  printHexaVector(codewordOutput);
 }

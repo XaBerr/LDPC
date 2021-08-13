@@ -167,7 +167,7 @@ std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _c
     newSyndrome = checkSyndrome(codeword);
     success     = true;
     for (i = 0; i < m; i++)
-      if (!newSyndrome[i]) {
+      if (newSyndrome[i]) {
         success = false;
         break;
       }
