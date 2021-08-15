@@ -20,18 +20,7 @@ Gallager::Gallager(size_t _n, size_t _k, size_t _weightColumns)
       paritiesLinks(m, std::vector<size_t>()),
       message(n),
       syndrome(m),
-      codeword(n) {
-  size_t i;
-  for (i = 0; i < 100; i++) {
-    generateH();
-    generateHRowEchelon();
-    if (HRowEchelon[m - 1][m - 1])
-      break;
-  }
-  if (i >= 100)
-    throw std::runtime_error("Error: cannot build a full linearly independent H.");
-  generateG();
-}
+      codeword(n) {}
 
 size_t Gallager::validateN(size_t _n) {
   if (_n <= 0)
@@ -55,12 +44,107 @@ size_t Gallager::validateM(size_t _n, size_t _k, size_t _weightColumns) {
   return _n - _k;
 }
 
-const std::vector<uint8_t> &Gallager::checkSyndrome(const std::vector<uint8_t> &_codeword) {
-  size_t i, j, temp;
+const std::vector<std::vector<uint8_t>> &Gallager::generateH() {
+  size_t i, j, u, k, v;
+  std::vector<std::vector<size_t>> shuffles(weightColumns, std::vector<size_t>(n));
+  for (u = 0; u < weightColumns; u++) {
+    for (i = 0; i < n; ++i) {
+      shuffles[u][i] = i;
+    }
+    if (u > 0)
+      std::shuffle(shuffles[u].begin(), shuffles[u].end(), uniform.getGenerator());
+  }
+  for (i = 0; i < m / weightColumns; i++)
+    for (j = 0; j < weightColumns * n / m; j++) {
+      k = j + i * weightColumns * n / m;
+      for (u = 0; u < weightColumns; u++) {
+        v = i + u * m / weightColumns;
+        // bands
+        H[v][shuffles[u][k]] = 1;
+        codewordsLinks[shuffles[u][k]].push_back(v);
+        paritiesLinks[v].push_back(shuffles[u][k]);
+      }
+    }
+  return H;
+}
+
+const std::vector<std::vector<uint8_t>> &Gallager::generateHRowEchelon() {
+  HRowEchelon = H;
+  size_t i, j, r = 0, last = n - k;
+
+  // iterate over rows
+  while (true) {
+    while (r < last) {
+      // find the first "1" in this row after position r
+      for (i = r; i < n; i++)
+        if (HRowEchelon[r][i])
+          break;
+
+      // row has no 1s after position r: exchange with another one
+      if (i == n) {
+        last--;
+
+        // swap rows
+        for (j = 0; j < n; j++)
+          std::swap(HRowEchelon[last][j], HRowEchelon[r][j]);
+      } else
+        break;
+    }
+
+    // break if we reached the last row
+    if (r == last)
+      break;
+
+    // swap column r and i to put a pivot in row r.
+    for (j = 0; j < n - k; j++) {
+      std::swap(HRowEchelon[j][i], HRowEchelon[j][r]);
+      std::swap(H[j][i], H[j][r]);
+    }
+
+    // for all rows (except pivot)
+    for (i = 0; i < n - k; i++)
+      if ((i != r) && HRowEchelon[i][r])
+        for (j = r; j < n; j++)
+          HRowEchelon[i][j] = HRowEchelon[i][j] ^ HRowEchelon[r][j];
+
+    r++;
+  }
+  return HRowEchelon;
+}
+
+const std::vector<std::vector<uint8_t>> &Gallager::generateG() {
+  size_t i, j;
   for (i = 0; i < k; i++) {
+    // I
+    G[i][i] = 1;
+    // P
+    for (j = 0; j < n - k; j++)
+      G[i][j + k] = HRowEchelon[j][i + (n - k)];
+  }
+  return G;
+}
+
+void Gallager::generateHG(int _maxNumberOfIterations) {
+  size_t i;
+  for (i = 0; i < _maxNumberOfIterations; i++) {
+    generateH();
+    generateHRowEchelon();
+    if (HRowEchelon[m - 1][m - 1])
+      break;
+  }
+  if (i >= 100)
+    throw std::runtime_error("Error: cannot build a full linearly independent H.");
+  generateG();
+}
+
+const std::vector<uint8_t> &Gallager::checkSyndrome(const std::vector<uint8_t> &_codeword) {
+  size_t i, j;
+  uint8_t temp;
+  for (i = 0; i < m; i++) {
     temp = 0;
     for (j = 0; j < n; j++)
-      temp ^= H[i][j] * _codeword[j];
+      if (H[i][j] && _codeword[j])
+        temp ^= 1;
     syndrome[i] = temp;
   }
   return syndrome;
@@ -188,84 +272,4 @@ std::vector<uint8_t> Gallager::decoderBealivePropagation(std::vector<uint8_t> _c
     }
   }
   return codeword;
-}
-
-const std::vector<std::vector<uint8_t>> &Gallager::generateH() {
-  size_t i, j, u, k, v;
-  std::vector<std::vector<size_t>> shuffles(weightColumns, std::vector<size_t>(n));
-  for (u = 0; u < weightColumns; u++) {
-    for (i = 0; i < n; ++i) {
-      shuffles[u][i] = i;
-    }
-    if (u > 0)
-      std::shuffle(shuffles[u].begin(), shuffles[u].end(), uniform.getGenerator());
-  }
-  for (i = 0; i < m / weightColumns; i++)
-    for (j = 0; j < weightColumns * n / m; j++) {
-      k = j + i * weightColumns * n / m;
-      for (u = 0; u < weightColumns; u++) {
-        v = i + u * m / weightColumns;
-        // bands
-        H[v][shuffles[u][k]] = 1;
-        codewordsLinks[shuffles[u][k]].push_back(v);
-        paritiesLinks[v].push_back(shuffles[u][k]);
-      }
-    }
-  return H;
-}
-
-const std::vector<std::vector<uint8_t>> &Gallager::generateHRowEchelon() {
-  HRowEchelon = H;
-  size_t i, j, r = 0, last = n - k;
-
-  // iterate over rows
-  while (true) {
-    while (r < last) {
-      // find the first "1" in this row after position r
-      for (i = r; i < n; i++)
-        if (HRowEchelon[r][i])
-          break;
-
-      // row has no 1s after position r: exchange with another one
-      if (i == n) {
-        last--;
-
-        // swap rows
-        for (j = 0; j < n; j++)
-          std::swap(HRowEchelon[last][j], HRowEchelon[r][j]);
-      } else
-        break;
-    }
-
-    // break if we reached the last row
-    if (r == last)
-      break;
-
-    // swap column r and i to put a pivot in row r.
-    for (j = 0; j < n - k; j++) {
-      std::swap(HRowEchelon[j][i], HRowEchelon[j][r]);
-      std::swap(H[j][i], H[j][r]);
-    }
-
-    // for all rows (except pivot)
-    for (i = 0; i < n - k; i++)
-      if ((i != r) && HRowEchelon[i][r])
-        for (j = r; j < n; j++)
-          HRowEchelon[i][j] = HRowEchelon[i][j] ^ HRowEchelon[r][j];
-
-    r++;
-  }
-  return HRowEchelon;
-}
-
-const std::vector<std::vector<uint8_t>> &Gallager::generateG() {
-  size_t i, j;
-  for (i = 0; i < k; i++) {
-    // I
-    G[i][i] = 1;
-    // P
-    for (j = 0; j < n - k; j++)
-      G[i][j + k] = HRowEchelon[j][i + (n - k)];
-  }
-  return G;
 }

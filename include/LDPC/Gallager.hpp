@@ -33,6 +33,7 @@ class Gallager {
 
  public:
   Gallager(size_t _n = 16, size_t _k = 5, size_t _weightColumns = 3);
+  void generateHG(int _maxNumberOfIterations = 100);
   const std::vector<std::vector<uint8_t>> &generateH();
   const std::vector<std::vector<uint8_t>> &generateHRowEchelon();
   const std::vector<std::vector<uint8_t>> &generateG();

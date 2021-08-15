@@ -29,11 +29,20 @@ void printBinVector(const std::vector<uint8_t>& _codeword) {
     std::cout << (int)var;
 }
 
+void printMatrix(const std::vector<std::vector<uint8_t>>& _matrix) {
+  for (auto row : _matrix) {
+    for (auto col : row)
+      std::cout << (int)col;
+    std::cout << std::endl;
+  }
+}
+
 int main(int argc, char const* argv[]) {
   const int n = 100;
   const int k = 10;
   const int m = n - k;
   std::vector<uint8_t> messageInput(k);
+  std::vector<uint8_t> syndrome(m);
   std::vector<uint8_t> codewordInput(m);
   std::vector<uint8_t> codewordChannel(m);
   std::vector<uint8_t> codewordOutput(m);
@@ -47,36 +56,28 @@ int main(int argc, char const* argv[]) {
   channel(codewordChannel, 0.05);
   codewordOutput = ldpc.decoderBealivePropagation(codewordChannel);
 
-  std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
-  for (auto row : ldpc.H) {
-    for (auto col : row)
-      std::cout << (int)col;
-    std::cout << std::endl;
-  }
+  syndrome = ldpc.checkSyndrome(codewordInput);
+  std::cout << "\Syndrome check: ";
+  printHexaVector(syndrome);
 
-  std::cout << "\nHRowEchelon matrix: " << ldpc.HRowEchelon.size() << " " << ldpc.HRowEchelon[5].size() << std::endl;
-  for (auto row : ldpc.HRowEchelon) {
-    for (auto col : row)
-      std::cout << (int)col;
-    std::cout << std::endl;
-  }
+  // std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
+  // printMatrix(ldpc.H);
 
-  std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[5].size() << std::endl;
-  for (auto row : ldpc.G) {
-    for (auto col : row)
-      std::cout << (int)col;
-    std::cout << std::endl;
-  }
+  // std::cout << "\nHRowEchelon matrix: " << ldpc.HRowEchelon.size() << " " << ldpc.HRowEchelon[5].size() << std::endl;
+  // printMatrix(ldpc.HRowEchelon);
 
-  std::cout << "\nMessage: ";
-  printHexaVector(messageInput);
+  // std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[5].size() << std::endl;
+  // printMatrix(ldpc.G);
 
-  std::cout << "\nEncoder: ";
-  printHexaVector(codewordInput);
+  // std::cout << "\nMessage: ";
+  // printHexaVector(messageInput);
 
-  std::cout << "\nChannel: ";
-  printHexaVector(codewordChannel);
+  // std::cout << "\nEncoder: ";
+  // printHexaVector(codewordInput);
 
-  std::cout << "\nDecoder: ";
-  printHexaVector(codewordOutput);
+  // std::cout << "\nChannel: ";
+  // printHexaVector(codewordChannel);
+
+  // std::cout << "\nDecoder: ";
+  // printHexaVector(codewordOutput);
 }
