@@ -110,6 +110,16 @@ const std::vector<std::vector<uint8_t>> &Gallager::generateHRowEchelon() {
 
     r++;
   }
+
+  auto HRowEchelon2 = HRowEchelon;
+  auto H2           = H;
+  // I|P to P|I
+  for (i = 0; i < m; i++)
+    for (j = 0; j < n; j++) {
+      std::swap(HRowEchelon[i][j], HRowEchelon2[i][(j + m) % n]);
+      std::swap(H[i][j], H2[i][(j + m) % n]);
+    }
+
   return HRowEchelon;
 }
 
@@ -120,7 +130,7 @@ const std::vector<std::vector<uint8_t>> &Gallager::generateG() {
     G[i][i] = 1;
     // P
     for (j = 0; j < n - k; j++)
-      G[i][j + k] = HRowEchelon[j][i + (n - k)];
+      G[i][j + k] = HRowEchelon[j][i];
   }
   return G;
 }
@@ -130,7 +140,7 @@ void Gallager::generateHG(int _maxNumberOfIterations) {
   for (i = 0; i < _maxNumberOfIterations; i++) {
     generateH();
     generateHRowEchelon();
-    if (HRowEchelon[m - 1][m - 1])
+    if (HRowEchelon[m - 1][n - 1])
       break;
   }
   if (i >= 100)

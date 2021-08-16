@@ -64,9 +64,9 @@ TEST_CASE("Gallager generateHRowEchelon()", "[ldpc]") {
   for (size_t i = 0; i < ldpc.m; i++)
     for (size_t j = 0; j < ldpc.m; j++)
       if (i == j)
-        REQUIRE(ldpc.HRowEchelon[i][j] == 1);
+        REQUIRE(ldpc.HRowEchelon[i][j + ldpc.k] == 1);
       else
-        REQUIRE(ldpc.HRowEchelon[i][j] == 0);
+        REQUIRE(ldpc.HRowEchelon[i][j + ldpc.k] == 0);
 }
 
 TEST_CASE("Gallager generateG()", "[ldpc]") {

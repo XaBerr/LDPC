@@ -38,10 +38,10 @@ void printMatrix(const std::vector<std::vector<uint8_t>>& _matrix) {
 }
 
 int main(int argc, char const* argv[]) {
-  const int n = 100;
-  const int k = 10;
+  const int n = 8;
+  const int k = 4;
   const int m = n - k;
-  std::vector<uint8_t> messageInput(k);
+  std::vector<uint8_t> messageInput(k, 1);
   std::vector<uint8_t> syndrome(m);
   std::vector<uint8_t> codewordInput(m);
   std::vector<uint8_t> codewordChannel(m);
@@ -62,13 +62,12 @@ int main(int argc, char const* argv[]) {
   // for (auto& var : messageInput)
   //   var = (uniform() < 0.7) ? 0 : 1;
 
-  // Gallager ldpc(n, k, 10);
-  // codewordInput   = ldpc.getCodeword(messageInput);
+  codewordInput = ldpc.getCodeword(messageInput);
+  syndrome      = ldpc.checkSyndrome(codewordInput);
   // codewordChannel = codewordInput;
   // channel(codewordChannel, 0.05);
   // codewordOutput = ldpc.decoderBealivePropagation(codewordChannel);
 
-  // syndrome = ldpc.checkSyndrome(codewordInput);
   // std::cout << "\Syndrome check: ";
   // printHexaVector(syndrome);
 
@@ -81,11 +80,14 @@ int main(int argc, char const* argv[]) {
   std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[5].size() << std::endl;
   printMatrix(ldpc.G);
 
-  // std::cout << "\nMessage: ";
-  // printHexaVector(messageInput);
+  std::cout << "\nMessage: ";
+  printBinVector(messageInput);
 
-  // std::cout << "\nEncoder: ";
-  // printHexaVector(codewordInput);
+  std::cout << "\nEncoder: ";
+  printBinVector(codewordInput);
+
+  std::cout << "\nSyndrome: ";
+  printBinVector(syndrome);
 
   // std::cout << "\nChannel: ";
   // printHexaVector(codewordChannel);
