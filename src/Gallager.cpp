@@ -38,7 +38,7 @@ size_t Gallager::validateK(size_t _n, size_t _k) {
 
 size_t Gallager::validateM(size_t _n, size_t _k, size_t _weightColumns) {
   if ((_n - _k) % _weightColumns)
-    throw std::invalid_argument("Error: n - k (i.e. m) must be multiple of weightColumns.");
+    throw std::invalid_argument("Error: (n - k) must be multiple of weightColumns.");
   float x = ((float)_weightColumns * _n / (_n - _k));
   if (std::floor(x) != x)
     throw std::invalid_argument("Error: weightColumns * n / (n - k) must an integer.");
@@ -97,13 +97,13 @@ const std::vector<std::vector<uint8_t>> &Gallager::generateHRowEchelon() {
       break;
 
     // swap column r and i to put a pivot in row r.
-    for (j = 0; j < n - k; j++) {
+    for (j = 0; j < m; j++) {
       std::swap(HRowEchelon[j][i], HRowEchelon[j][r]);
       std::swap(H[j][i], H[j][r]);
     }
 
     // for all rows (except pivot)
-    for (i = 0; i < n - k; i++)
+    for (i = 0; i < m; i++)
       if ((i != r) && HRowEchelon[i][r])
         for (j = r; j < n; j++)
           HRowEchelon[i][j] = HRowEchelon[i][j] ^ HRowEchelon[r][j];
@@ -116,8 +116,8 @@ const std::vector<std::vector<uint8_t>> &Gallager::generateHRowEchelon() {
   // I|P to P|I
   for (i = 0; i < m; i++)
     for (j = 0; j < n; j++) {
-      std::swap(HRowEchelon[i][j], HRowEchelon2[i][(j + m) % n]);
-      std::swap(H[i][j], H2[i][(j + m) % n]);
+      HRowEchelon[i][j] = HRowEchelon2[i][(j + m) % n];
+      H[i][j]           = H2[i][(j + m) % n];
     }
 
   return HRowEchelon;
@@ -142,6 +142,9 @@ void Gallager::generateHG(int _maxNumberOfIterations) {
     generateHRowEchelon();
     if (HRowEchelon[m - 1][n - 1])
       break;
+    for (auto &row : H)
+      for (auto &col : row)
+        col = 0;
   }
   if (i >= 100)
     throw std::runtime_error("Error: cannot build a full linearly independent H.");

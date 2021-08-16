@@ -47,17 +47,35 @@ int main(int argc, char const* argv[]) {
   std::vector<uint8_t> codewordChannel(m);
   std::vector<uint8_t> codewordOutput(m);
 
-  Gallager ldpc(8, 4, 2);
+  Gallager ldpc(12, 3, 3);
   ldpc.H = {
-      {1, 1, 1, 1, 0, 0, 0, 0},
-      {0, 0, 0, 0, 1, 1, 1, 1},
+      {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+      {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0},
+      {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1},
 
-      {0, 0, 1, 0, 1, 0, 1, 1},
-      {1, 1, 0, 0, 0, 1, 0, 0}};
-  std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
-  printMatrix(ldpc.H);
-  ldpc.generateHRowEchelon();
-  ldpc.generateG();
+      {1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0},
+      {0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
+      {0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0},
+
+      {1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0},
+      {0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0},
+      {0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1}};
+  // ldpc.generateHG();
+  // ldpc.generateH();
+  // ldpc.generateHRowEchelon();
+  // ldpc.generateG();
+
+  // Gallager ldpc(8, 4, 2);
+  // ldpc.H = {
+  //     {1, 1, 1, 1, 0, 0, 0, 0},
+  //     {0, 0, 0, 0, 1, 1, 1, 1},
+
+  //     {0, 0, 1, 0, 1, 0, 1, 1},
+  //     {1, 1, 0, 1, 0, 1, 0, 0}};
+  // std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
+  // printMatrix(ldpc.H);
+  // ldpc.generateHRowEchelon();
+  // ldpc.generateG();
 
   // for (auto& var : messageInput)
   //   var = (uniform() < 0.7) ? 0 : 1;
@@ -71,23 +89,23 @@ int main(int argc, char const* argv[]) {
   // std::cout << "\Syndrome check: ";
   // printHexaVector(syndrome);
 
-  std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
+  std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[0].size() << std::endl;
   printMatrix(ldpc.H);
 
-  std::cout << "\nHRowEchelon matrix: " << ldpc.HRowEchelon.size() << " " << ldpc.HRowEchelon[5].size() << std::endl;
+  std::cout << "\nHRowEchelon matrix: " << ldpc.HRowEchelon.size() << " " << ldpc.HRowEchelon[0].size() << std::endl;
   printMatrix(ldpc.HRowEchelon);
 
-  std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[5].size() << std::endl;
-  printMatrix(ldpc.G);
+  // std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[0].size() << std::endl;
+  // printMatrix(ldpc.G);
 
-  std::cout << "\nMessage: ";
-  printBinVector(messageInput);
+  // std::cout << "\nMessage: ";
+  // printBinVector(messageInput);
 
-  std::cout << "\nEncoder: ";
-  printBinVector(codewordInput);
+  // std::cout << "\nEncoder: ";
+  // printBinVector(codewordInput);
 
-  std::cout << "\nSyndrome: ";
-  printBinVector(syndrome);
+  // std::cout << "\nSyndrome: ";
+  // printBinVector(syndrome);
 
   // std::cout << "\nChannel: ";
   // printHexaVector(codewordChannel);
