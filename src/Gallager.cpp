@@ -39,8 +39,9 @@ size_t Gallager::validateK(size_t _n, size_t _k) {
 size_t Gallager::validateM(size_t _n, size_t _k, size_t _weightColumns) {
   if ((_n - _k) % _weightColumns)
     throw std::invalid_argument("Error: n - k (i.e. m) must be multiple of weightColumns.");
-  if ((_weightColumns * _n / (_n - _k)) % 1)
-    throw std::invalid_argument("Error: weightColumns * n / (n -k) must an integer.");
+  float x = ((float)_weightColumns * _n / (_n - _k));
+  if (std::floor(x) != x)
+    throw std::invalid_argument("Error: weightColumns * n / (n - k) must an integer.");
   return _n - _k;
 }
 

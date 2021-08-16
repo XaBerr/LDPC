@@ -47,27 +47,39 @@ int main(int argc, char const* argv[]) {
   std::vector<uint8_t> codewordChannel(m);
   std::vector<uint8_t> codewordOutput(m);
 
-  for (auto& var : messageInput)
-    var = (uniform() < 0.7) ? 0 : 1;
+  Gallager ldpc(8, 4, 2);
+  ldpc.H = {
+      {1, 1, 1, 1, 0, 0, 0, 0},
+      {0, 0, 0, 0, 1, 1, 1, 1},
 
-  Gallager ldpc(n, k, 10);
-  codewordInput   = ldpc.getCodeword(messageInput);
-  codewordChannel = codewordInput;
-  channel(codewordChannel, 0.05);
-  codewordOutput = ldpc.decoderBealivePropagation(codewordChannel);
+      {0, 0, 1, 0, 1, 0, 1, 1},
+      {1, 1, 0, 0, 0, 1, 0, 0}};
+  std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
+  printMatrix(ldpc.H);
+  ldpc.generateHRowEchelon();
+  ldpc.generateG();
 
-  syndrome = ldpc.checkSyndrome(codewordInput);
-  std::cout << "\Syndrome check: ";
-  printHexaVector(syndrome);
+  // for (auto& var : messageInput)
+  //   var = (uniform() < 0.7) ? 0 : 1;
 
-  // std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
-  // printMatrix(ldpc.H);
+  // Gallager ldpc(n, k, 10);
+  // codewordInput   = ldpc.getCodeword(messageInput);
+  // codewordChannel = codewordInput;
+  // channel(codewordChannel, 0.05);
+  // codewordOutput = ldpc.decoderBealivePropagation(codewordChannel);
 
-  // std::cout << "\nHRowEchelon matrix: " << ldpc.HRowEchelon.size() << " " << ldpc.HRowEchelon[5].size() << std::endl;
-  // printMatrix(ldpc.HRowEchelon);
+  // syndrome = ldpc.checkSyndrome(codewordInput);
+  // std::cout << "\Syndrome check: ";
+  // printHexaVector(syndrome);
 
-  // std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[5].size() << std::endl;
-  // printMatrix(ldpc.G);
+  std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[5].size() << std::endl;
+  printMatrix(ldpc.H);
+
+  std::cout << "\nHRowEchelon matrix: " << ldpc.HRowEchelon.size() << " " << ldpc.HRowEchelon[5].size() << std::endl;
+  printMatrix(ldpc.HRowEchelon);
+
+  std::cout << "\nG matrix: " << ldpc.G.size() << " " << ldpc.G[5].size() << std::endl;
+  printMatrix(ldpc.G);
 
   // std::cout << "\nMessage: ";
   // printHexaVector(messageInput);
