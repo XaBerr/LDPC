@@ -8,7 +8,32 @@ using namespace LDPCm;
 static Uniform uniform;
 
 Gallager::Gallager(size_t _n, size_t _k, size_t _weightColumns)
-    : LDPC(_n, _k, _weightColumns) {}
+    : LDPC(validateN(_n), validateK(_n, _k)),
+      weightColumns{validateWeightColumns(_n, _k, _weightColumns)},
+      weightRows{weightColumns * n / m} {}
+
+size_t Gallager::validateN(size_t _n) {
+  if (_n <= 0)
+    throw std::invalid_argument("Error: n must be > 0.");
+  return _n;
+}
+
+size_t Gallager::validateK(size_t _n, size_t _k) {
+  if (_k <= 0)
+    throw std::invalid_argument("Error: k must be > 0.");
+  if (_n <= _k)
+    throw std::invalid_argument("Error: k must be < n.");
+  return _k;
+}
+
+size_t Gallager::validateWeightColumns(size_t _n, size_t _k, size_t _weightColumns) {
+  if ((_n - _k) % _weightColumns)
+    throw std::invalid_argument("Error: (n - k) must be multiple of weightColumns.");
+  float x = ((float)_weightColumns * _n / (_n - _k));
+  if (std::floor(x) != x)
+    throw std::invalid_argument("Error: weightColumns * n / (n - k) must an integer.");
+  return _weightColumns;
+}
 
 const std::vector<std::vector<uint8_t>> &Gallager::generateH() {
   size_t i, j, u, k, v;
@@ -27,8 +52,6 @@ const std::vector<std::vector<uint8_t>> &Gallager::generateH() {
         v = i + u * m / weightColumns;
         // bands
         H[v][shuffles[u][k]] = 1;
-        codewordsLinks[shuffles[u][k]].push_back(v);
-        paritiesLinks[v].push_back(shuffles[u][k]);
       }
     }
   return H;

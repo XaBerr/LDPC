@@ -7,12 +7,10 @@
 using namespace LDPCm;
 static Uniform uniform;
 
-LDPC::LDPC(size_t _n, size_t _k, size_t _weightColumns)
-    : n{validateN(_n)},
-      k{validateK(_n, _k)},
-      m{validateM(_n, _k, _weightColumns)},
-      weightColumns{_weightColumns},
-      weightRows{weightColumns * n / m},
+LDPC::LDPC(size_t _n, size_t _k)
+    : n{_n},
+      k{_k},
+      m{_n - k},
       H(m, std::vector<uint8_t>(n)),
       HRowEchelon(),
       G(k, std::vector<uint8_t>(n)),
@@ -21,29 +19,6 @@ LDPC::LDPC(size_t _n, size_t _k, size_t _weightColumns)
       message(n),
       syndrome(m),
       codeword(n) {}
-
-size_t LDPC::validateN(size_t _n) {
-  if (_n <= 0)
-    throw std::invalid_argument("Error: n must be > 0.");
-  return _n;
-}
-
-size_t LDPC::validateK(size_t _n, size_t _k) {
-  if (_k <= 0)
-    throw std::invalid_argument("Error: k must be > 0.");
-  if (_n <= _k)
-    throw std::invalid_argument("Error: k must be < n.");
-  return _k;
-}
-
-size_t LDPC::validateM(size_t _n, size_t _k, size_t _weightColumns) {
-  if ((_n - _k) % _weightColumns)
-    throw std::invalid_argument("Error: (n - k) must be multiple of weightColumns.");
-  float x = ((float)_weightColumns * _n / (_n - _k));
-  if (std::floor(x) != x)
-    throw std::invalid_argument("Error: weightColumns * n / (n - k) must an integer.");
-  return _n - _k;
-}
 
 const std::vector<std::vector<uint8_t>> &LDPC::generateHRowEchelon() {
   HRowEchelon = H;
@@ -95,8 +70,17 @@ const std::vector<std::vector<uint8_t>> &LDPC::generateHRowEchelon() {
       HRowEchelon[i][j] = HRowEchelon2[i][(j + m) % n];
       H[i][j]           = H2[i][(j + m) % n];
     }
-
+  generateLinks();
   return HRowEchelon;
+}
+
+void LDPC::generateLinks() {
+  for (size_t i = 0; i < m; i++)
+    for (size_t j = 0; j < n; j++)
+      if (H[i][j]) {
+        codewordsLinks[j].push_back(i);
+        paritiesLinks[i].push_back(j);
+      }
 }
 
 const std::vector<std::vector<uint8_t>> &LDPC::generateG() {
