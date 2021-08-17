@@ -1,8 +1,8 @@
-#include <LDPC.hpp>
+#include <LDPCm.hpp>
 #include <iostream>
 #include <random>
 
-using namespace LDPC;
+using namespace LDPCm;
 static Uniform uniform;
 
 void channel(std::vector<uint8_t>& _codeword, float _pError) {

@@ -1,6 +1,6 @@
-#include <LDPC/SimpleClass.hpp>
+#include <LDPCm/SimpleClass.hpp>
 
-using namespace LDPC;
+using namespace LDPCm;
 
 SimpleClass::SimpleClass()
     : number{0} {}

@@ -1,7 +1,7 @@
 #ifndef LDPC_SIMPLECLASS_H
 #define LDPC_SIMPLECLASS_H
 
-namespace LDPC {
+namespace LDPCm {
 class SimpleClass {
   int number;
 
@@ -10,6 +10,6 @@ class SimpleClass {
   void setNumber(int _number);
   int getNumber() const;
 };
-}  // namespace LDPC
+}  // namespace LDPCm
 
 #endif

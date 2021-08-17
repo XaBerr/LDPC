@@ -4,7 +4,7 @@
 #include <random>
 #include <ctime>
 
-namespace LDPC {
+namespace LDPCm {
 class Uniform {
   std::mt19937 generator;
   std::uniform_real_distribution<double> distribution;
@@ -14,6 +14,6 @@ class Uniform {
   std::mt19937& getGenerator() { return generator; }
   double operator()() { return distribution(generator); }
 };
-}  // namespace LDPC
+}  // namespace LDPCm
 
 #endif

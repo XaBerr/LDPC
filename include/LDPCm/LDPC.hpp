@@ -1,12 +1,12 @@
-#ifndef LDPC_GALLAGER_H
-#define LDPC_GALLAGER_H
+#ifndef LDPC_LDPC_H
+#define LDPC_LDPC_H
 
 #include <vector>
 #include <math.h>
 #include <stdint.h>
 
-namespace LDPC {
-class Gallager {
+namespace LDPCm {
+class LDPC {
  public:
   const size_t n;
   const size_t k;
@@ -17,7 +17,7 @@ class Gallager {
   std::vector<std::vector<uint8_t>> HRowEchelon;
   std::vector<std::vector<uint8_t>> G;
 
- private:
+ protected:
   std::vector<std::vector<size_t>> codewordsLinks;
   std::vector<std::vector<size_t>> paritiesLinks;
   std::vector<uint8_t> message;
@@ -32,11 +32,11 @@ class Gallager {
   static inline float phy(float x) { return log((exp(x) + 1) / (exp(x) - 1)); }
 
  public:
-  Gallager(size_t _n = 16, size_t _k = 5, size_t _weightColumns = 3);
-  void generateHG(int _maxNumberOfIterations = 100);
-  const std::vector<std::vector<uint8_t>> &generateH();
+  LDPC(size_t _n = 16, size_t _k = 5, size_t _weightColumns = 3);
+  const std::vector<std::vector<uint8_t>> &generateH() { return H; }
   const std::vector<std::vector<uint8_t>> &generateHRowEchelon();
   const std::vector<std::vector<uint8_t>> &generateG();
+  void generateHG(int _maxNumberOfIterations = 100) {}
 
   const std::vector<uint8_t> &checkSyndrome(const std::vector<uint8_t> &_codeword);
   const std::vector<uint8_t> &getCodeword(const std::vector<uint8_t> &_message);
@@ -46,6 +46,6 @@ class Gallager {
   std::vector<uint8_t> decoderBitFlip(std::vector<uint8_t> _message, std::vector<uint8_t> _syndrome, size_t _maxNumberOfIterations = 30);
   std::vector<uint8_t> decoderBealivePropagation(std::vector<uint8_t> _codeword, size_t _maxNumberOfIterations = 30);
 };
-}  // namespace LDPC
+}  // namespace LDPCm
 
 #endif
