@@ -11,6 +11,7 @@ class LDPC {
   const size_t n;
   const size_t k;
   const size_t m;
+  const size_t numberOfRowsInH;
   std::vector<std::vector<uint8_t>> H;
   std::vector<std::vector<uint8_t>> HRowEchelon;
   std::vector<std::vector<uint8_t>> G;
@@ -27,7 +28,7 @@ class LDPC {
   static inline float phy(float x) { return log((exp(x) + 1) / (exp(x) - 1)); }
 
  public:
-  LDPC(size_t _n = 16, size_t _k = 5);
+  LDPC(size_t _n, size_t _k, size_t _numberOfRowsInH);
   const std::vector<std::vector<uint8_t>> &generateH() { return H; }
   const std::vector<std::vector<uint8_t>> &generateHRowEchelon();
   const std::vector<std::vector<uint8_t>> &generateG();

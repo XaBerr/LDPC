@@ -7,10 +7,10 @@
 using namespace LDPCm;
 static Uniform uniform;
 
-Gallager::Gallager(size_t _n, size_t _k, size_t _weightColumns)
-    : LDPC(validateN(_n), validateK(_n, _k)),
-      weightColumns{validateWeightColumns(_n, _k, _weightColumns)},
-      weightRows{weightColumns * n / m} {}
+Gallager::Gallager(size_t _n, size_t _k, size_t _numberOfRowsInH, size_t _weightColumns)
+    : LDPC(validateN(_n), validateK(_n, _k), _numberOfRowsInH),
+      weightColumns{validateWeightColumns(_n, _k, _numberOfRowsInH, _weightColumns)},
+      weightRows{weightColumns * n / numberOfRowsInH} {}
 
 size_t Gallager::validateN(size_t _n) {
   if (_n <= 0)
@@ -26,12 +26,14 @@ size_t Gallager::validateK(size_t _n, size_t _k) {
   return _k;
 }
 
-size_t Gallager::validateWeightColumns(size_t _n, size_t _k, size_t _weightColumns) {
-  if ((_n - _k) % _weightColumns)
-    throw std::invalid_argument("Error: (n - k) must be multiple of weightColumns.");
-  float x = ((float)_weightColumns * _n / (_n - _k));
+size_t Gallager::validateWeightColumns(size_t _n, size_t _k, size_t _numberOfRowsInH, size_t _weightColumns) {
+  if ((_n - _k) > _numberOfRowsInH)
+    throw std::invalid_argument("Error: (n - k) must be > that numberOfRowsInH.");
+  if ((_numberOfRowsInH) % _weightColumns)
+    throw std::invalid_argument("Error: numberOfRowsInH must be multiple of weightColumns.");
+  float x = ((float)_weightColumns * _n / (_numberOfRowsInH));
   if (std::floor(x) != x)
-    throw std::invalid_argument("Error: weightColumns * n / (n - k) must an integer.");
+    throw std::invalid_argument("Error: weightColumns * n / numberOfRowsInH must an integer.");
   return _weightColumns;
 }
 
@@ -45,11 +47,11 @@ const std::vector<std::vector<uint8_t>> &Gallager::generateH() {
     if (u > 0)
       std::shuffle(shuffles[u].begin(), shuffles[u].end(), uniform.getGenerator());
   }
-  for (i = 0; i < m / weightColumns; i++)
-    for (j = 0; j < weightColumns * n / m; j++) {
-      k = j + i * weightColumns * n / m;
+  for (i = 0; i < numberOfRowsInH / weightColumns; i++)
+    for (j = 0; j < weightColumns * n / numberOfRowsInH; j++) {
+      k = j + i * weightColumns * n / numberOfRowsInH;
       for (u = 0; u < weightColumns; u++) {
-        v = i + u * m / weightColumns;
+        v = i + u * numberOfRowsInH / weightColumns;
         // bands
         H[v][shuffles[u][k]] = 1;
       }

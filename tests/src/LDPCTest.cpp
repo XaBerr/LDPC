@@ -5,19 +5,22 @@ using namespace LDPCm;
 
 TEST_CASE("LDPC LDPC()", "[ldpc]") {
   SECTION("Simple init") {
-    LDPC ldpc(100, 80);
+    LDPC ldpc(100, 80, 30);
     REQUIRE(ldpc.n == 100);
     REQUIRE(ldpc.k == 80);
     REQUIRE(ldpc.m == 20);
-    REQUIRE(ldpc.H.size() == 20);
+    REQUIRE(ldpc.numberOfRowsInH == 30);
+    REQUIRE(ldpc.H.size() == 30);
     REQUIRE(ldpc.H[0].size() == 100);
+    REQUIRE(ldpc.HRowEchelon.size() == 20);
+    REQUIRE(ldpc.HRowEchelon[0].size() == 100);
     REQUIRE(ldpc.G.size() == 80);
     REQUIRE(ldpc.G[0].size() == 100);
   }
 }
 
 TEST_CASE("LDPC generateHRowEchelon()", "[ldpc]") {
-  LDPC ldpc(8, 4);
+  LDPC ldpc(8, 4, 4);
   REQUIRE(ldpc.H.size() == 4);
   REQUIRE(ldpc.H[0].size() == 8);
   // rank 4 matrix checked with wolfram
@@ -43,7 +46,7 @@ TEST_CASE("LDPC generateHRowEchelon()", "[ldpc]") {
 }
 
 TEST_CASE("LDPC generateG()", "[ldpc]") {
-  LDPC ldpc(8, 4);
+  LDPC ldpc(8, 4, 4);
   ldpc.H = {
       {1, 1, 1, 1, 0, 0, 0, 0},
       {0, 0, 0, 0, 1, 1, 1, 1},
@@ -61,7 +64,7 @@ TEST_CASE("LDPC generateG()", "[ldpc]") {
 }
 
 TEST_CASE("LDPC getCodeword()", "[ldpc]") {
-  LDPC ldpc(8, 4);
+  LDPC ldpc(8, 4, 4);
   ldpc.H = {
       {1, 1, 1, 1, 0, 0, 0, 0},
       {0, 0, 0, 0, 1, 1, 1, 1},
