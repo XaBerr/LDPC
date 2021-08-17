@@ -63,7 +63,24 @@ TEST_CASE("LDPC generateG()", "[ldpc]") {
         REQUIRE(ldpc.G[i][j] == 0);
 }
 
-TEST_CASE("LDPC getCodeword()", "[ldpc]") {
+TEST_CASE("LDPC getCodeword(message)", "[ldpc]") {
+  LDPC ldpc(8, 4, 4);
+  ldpc.H = {
+      {1, 1, 1, 1, 0, 0, 0, 0},
+      {0, 0, 0, 0, 1, 1, 1, 1},
+
+      {0, 0, 1, 0, 1, 0, 1, 1},
+      {1, 1, 0, 0, 0, 1, 1, 0}};
+  ldpc.generateHRowEchelon();
+  ldpc.generateG();
+
+  std::vector<uint8_t> message = {1, 1, 1, 1};
+  auto codeword                = ldpc.getCodeword(message);
+  std::vector<uint8_t> solution(8, 1);
+  REQUIRE(codeword == solution);
+}
+
+TEST_CASE("LDPC checkSyndrome(codeword)", "[ldpc]") {
   LDPC ldpc(8, 4, 4);
   ldpc.H = {
       {1, 1, 1, 1, 0, 0, 0, 0},
