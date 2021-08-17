@@ -38,34 +38,52 @@ void printMatrix(const std::vector<std::vector<uint8_t>>& _matrix) {
 }
 
 int main(int argc, char const* argv[]) {
-  const int n  = 12;
-  const int k  = 9;
+  const int n  = 30;
+  const int k  = 22;
   const int m  = n - k;
-  const int l  = 6;
-  const int wc = 3;
-  Gallager ldpc(n, k, l, wc);
-  ldpc.generateHG();
+  const int l  = 8;
+  const int wc = 5;
+  LDPC ldpc(n, k, l);
+  ldpc.H = {{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0},
+            {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+            {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0},
+            {0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+            {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0},
+            {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0},
+            {0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0},
+            {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0}};
+  // ldpc.H = {
+  //     {1, 1, 0},
+  //     {0, 1, 1},
+  //     {1, 0, 1}};
+  // ldpc.H = {
+  //     {1, 1, 0, 1, 0, 0},
+  //     {0, 1, 1, 0, 1, 0},
+  //     {1, 0, 0, 0, 1, 1},
+  //     {0, 0, 1, 1, 0, 1}};
   // ldpc.H = {
   //     {1, 1, 0, 1, 1, 0, 0, 1, 0, 0},
   //     {0, 1, 1, 0, 1, 1, 1, 0, 0, 0},
   //     {0, 0, 0, 1, 0, 0, 0, 1, 1, 1},
   //     {1, 1, 0, 0, 0, 1, 1, 0, 1, 0},
   //     {0, 0, 1, 0, 0, 1, 0, 1, 0, 1}};
+  ldpc.generateHRowEchelon();
+  ldpc.generateG();
+  // ldpc.generateHG();
 
   std::vector<uint8_t> messageInput(k, 1);
-  std::vector<uint8_t> syndrome(l);
+  std::vector<uint8_t> syndrome(m);
   std::vector<uint8_t> codewordInput(n);
   std::vector<uint8_t> codewordChannel(n);
   std::vector<uint8_t> codewordOutput(n);
 
   // std::cout << "\nH matrix: " << ldpc.H.size() << " " << ldpc.H[0].size() << std::endl;
   // printMatrix(ldpc.H);
-  // ldpc.generateHRowEchelon();
-  // ldpc.generateG();
 
   // for (auto& var : messageInput)
   //   var = (uniform() < 0.7) ? 0 : 1;
 
+  messageInput       = {0, 0, 1};
   codewordInput      = ldpc.getCodeword(messageInput);
   codewordChannel    = codewordInput;
   codewordChannel[1] = codewordChannel[1] ? 0 : 1;

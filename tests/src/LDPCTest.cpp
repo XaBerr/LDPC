@@ -99,3 +99,30 @@ TEST_CASE("LDPC checkSyndrome(codeword)", "[ldpc]") {
     zero += pos;
   REQUIRE(zero == 0);
 }
+
+TEST_CASE("LDPC decoderBealivePropagation(codeword,maxNumberOfIterations)", "[ldpc]") {
+  LDPC ldpc(30, 22, 8);
+  ldpc.H = {{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0},
+            {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+            {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0},
+            {0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+            {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0},
+            {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0},
+            {0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0},
+            {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0}};
+  ldpc.generateHRowEchelon();
+  ldpc.generateG();
+
+  std::vector<uint8_t> message{0, 0, 1};
+  std::vector<uint8_t> codeword = ldpc.getCodeword(message);
+  std::vector<uint8_t> codewordSolution{0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1};
+  REQUIRE(codeword == codewordSolution);
+  std::vector<uint8_t> syndrome = ldpc.checkSyndrome(codeword);
+  std::vector<uint8_t> solution(8, 0);
+  REQUIRE(syndrome == solution);
+  codeword[1] = codeword[1] ? 0 : 1;
+  codeword[3] = codeword[3] ? 0 : 1;
+  codeword    = ldpc.decoderBealivePropagation(codeword);
+  syndrome    = ldpc.checkSyndrome(codeword);
+  REQUIRE(syndrome == solution);
+}

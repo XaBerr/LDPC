@@ -28,7 +28,7 @@ size_t Gallager::validateK(size_t _n, size_t _k) {
 
 size_t Gallager::validateWeightColumns(size_t _n, size_t _k, size_t _numberOfRowsInH, size_t _weightColumns) {
   if ((_n - _k) > _numberOfRowsInH)
-    throw std::invalid_argument("Error: (n - k) must be > that numberOfRowsInH.");
+    throw std::invalid_argument("Error: (n - k) must be <= that numberOfRowsInH.");
   if ((_numberOfRowsInH) % _weightColumns)
     throw std::invalid_argument("Error: numberOfRowsInH must be multiple of weightColumns.");
   float x = ((float)_weightColumns * _n / (_numberOfRowsInH));

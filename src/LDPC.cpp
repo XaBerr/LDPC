@@ -16,9 +16,9 @@ LDPC::LDPC(size_t _n, size_t _k, size_t _numberOfRowsInH)
       HRowEchelon(m, std::vector<uint8_t>(n)),
       G(k, std::vector<uint8_t>(n)),
       codewordsLinks(n, std::vector<size_t>()),
-      paritiesLinks(numberOfRowsInH, std::vector<size_t>()),
+      paritiesLinks(m, std::vector<size_t>()),
       message(n),
-      syndrome(numberOfRowsInH),
+      syndrome(m),
       codeword(n) {}
 
 const std::vector<std::vector<uint8_t>> &LDPC::generateHRowEchelon() {
@@ -75,7 +75,7 @@ const std::vector<std::vector<uint8_t>> &LDPC::generateHRowEchelon() {
 }
 
 void LDPC::generateLinks() {
-  for (size_t i = 0; i < numberOfRowsInH; i++)
+  for (size_t i = 0; i < m; i++)
     for (size_t j = 0; j < n; j++)
       if (H[i][j]) {
         codewordsLinks[j].push_back(i);
@@ -98,10 +98,10 @@ const std::vector<std::vector<uint8_t>> &LDPC::generateG() {
 const std::vector<uint8_t> &LDPC::checkSyndrome(const std::vector<uint8_t> &_codeword) {
   size_t i, j;
   uint8_t temp;
-  for (i = 0; i < numberOfRowsInH; i++) {
+  for (i = 0; i < m; i++) {
     temp = 0;
     for (j = 0; j < n; j++)
-      if (H[i][j] && _codeword[j])
+      if (HRowEchelon[i][j] && _codeword[j])
         temp ^= 1;
     syndrome[i] = temp;
   }
@@ -166,7 +166,7 @@ std::vector<uint8_t> LDPC::decoderBitFlip(std::vector<uint8_t> _message, std::ve
 }
 
 std::vector<uint8_t> LDPC::decoderBealivePropagation(std::vector<uint8_t> _codeword, size_t _maxNumberOfIterations) {
-  std::vector<uint8_t> newSyndrome(numberOfRowsInH);
+  std::vector<uint8_t> newSyndrome(m);
   std::vector<float> r(n);  // loglikelihood(0.005)
   codeword = _codeword;
   bool success;
@@ -175,16 +175,16 @@ std::vector<uint8_t> LDPC::decoderBealivePropagation(std::vector<uint8_t> _codew
   for (i = 0; i < n; i++)
     r[i] = codeword[i] ? loglikelihood(errorProbability) : -loglikelihood(errorProbability);
 
-  std::vector<std::vector<float>> M(numberOfRowsInH, r);
-  std::vector<std::vector<float>> E(numberOfRowsInH, std::vector<float>(n));
+  std::vector<std::vector<float>> M(m, r);
+  std::vector<std::vector<float>> E(m, std::vector<float>(n));
   std::vector<float> L(n);
   std::cout << "M matrix: " << M.size() << " " << M[0].size() << std::endl;
   std::cout << "E matrix: " << E.size() << " " << E[0].size() << std::endl;
-  std::cout << "numberOfRowsInH: " << numberOfRowsInH << " n: " << n << std::endl;
+  std::cout << "m: " << m << " n: " << n << std::endl;
 
   while (0 < _maxNumberOfIterations--) {
     // extrinsic probabilities
-    for (j = 0; j < numberOfRowsInH; j++) {
+    for (j = 0; j < m; j++) {
       for (i = 0; i < paritiesLinks[j].size(); i++) {
         temp = 1;
         for (ii = 0; ii < paritiesLinks[j].size(); ii++)
@@ -208,7 +208,7 @@ std::vector<uint8_t> LDPC::decoderBealivePropagation(std::vector<uint8_t> _codew
     // exit condition
     newSyndrome = checkSyndrome(codeword);
     success     = true;
-    for (i = 0; i < numberOfRowsInH; i++)
+    for (i = 0; i < m; i++)
       if (newSyndrome[i]) {
         success = false;
         break;
