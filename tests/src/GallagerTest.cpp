@@ -70,6 +70,7 @@ TEST_CASE("Gallager generateHG()", "[ldpc]") {
     CHECK_THROWS(ldpc.generateHG());
   }
   Gallager ldpc(100, 80, 100, 5);
+  ldpc.generateHG();
   SECTION("Test H") {
     size_t ones = 0;
     for (auto row : ldpc.H)
